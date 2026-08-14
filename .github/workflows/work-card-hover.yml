@@ -1,4 +1,4 @@
-name: Add subtle work card hover interaction
+name: Refine work cards
 
 on:
   push:
@@ -10,11 +10,11 @@ permissions:
   contents: write
 
 jobs:
-  update-hover:
+  update-work:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Update work card hover interaction
+      - name: Refine work layout and hover
         run: |
           python - <<'PY'
           from pathlib import Path
@@ -22,21 +22,84 @@ jobs:
           path = Path('index.html')
           text = path.read_text()
 
-          old_css = '''  .tile{\n    position:relative; aspect-ratio:3/5; border-radius:6px; overflow:hidden;\n    display:flex; align-items:flex-end; padding:16px;\n    cursor:pointer; transition:transform .4s var(--ease);\n  }\n  .tile:hover{ transform:translateY(-4px); }\n  .tile .tag{\n    font-family:'Pretendard Variable'; font-weight:700; font-size:14px; line-height:1.15;\n    color:#fff; text-shadow:0 2px 12px rgba(0,0,0,0.25);\n  }\n'''
+          marker = '</style>'
+          css = '''
+  /* WORK refinements */
+  .work-layout{
+    display:grid !important;
+    grid-template-columns:minmax(240px,.72fr) minmax(0,1.55fr) !important;
+    gap:56px !important;
+    align-items:start !important;
+    width:100%;
+  }
+  .filters{min-width:0;width:100%;}
+  .grid{
+    display:grid !important;
+    grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+    gap:14px !important;
+    width:100%;
+    min-width:0;
+    align-items:start;
+  }
+  .tile{
+    width:100%;
+    min-width:0;
+    aspect-ratio:3/5;
+    overflow:hidden;
+    transform:none !important;
+  }
+  .tile::after{display:none !important;}
+  .tile-bg{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    background-size:cover !important;
+    background-position:center center !important;
+    transform:scale(1) !important;
+    transform-origin:center center;
+    transition:transform .75s cubic-bezier(.16,.8,.24,1) !important;
+    filter:none !important;
+    will-change:transform;
+  }
+  .tile:hover .tile-bg{
+    transform:scale(1.08) !important;
+    filter:none !important;
+  }
+  .tile .tag{position:relative;z-index:2;}
 
-          new_css = '''  .tile{\n    position:relative; aspect-ratio:3/5; border-radius:6px; overflow:hidden;\n    display:flex; align-items:flex-end; padding:16px;\n    cursor:pointer;\n  }\n  .tile-bg{\n    position:absolute; inset:0;\n    background-size:cover; background-position:center;\n    transform:scale(1);\n    transition:transform .65s var(--ease), filter .45s ease;\n    will-change:transform;\n  }\n  .tile::after{\n    content:''; position:absolute; inset:0; pointer-events:none;\n    background:linear-gradient(120deg, transparent 28%, rgba(255,255,255,.10) 48%, transparent 68%);\n    transform:translateX(-120%);\n    transition:transform .7s var(--ease);\n  }\n  .tile:hover .tile-bg{ transform:scale(1.035); filter:saturate(1.04) brightness(1.025); }\n  .tile:hover::after{ transform:translateX(120%); }\n  .tile .tag{\n    position:relative; z-index:2;\n    font-family:'Pretendard Variable'; font-weight:700; font-size:14px; line-height:1.15;\n    color:#fff; text-shadow:0 2px 12px rgba(0,0,0,0.25);\n  }\n'''
+  @media(max-width:1200px){
+    .work-layout{
+      grid-template-columns:minmax(220px,.65fr) minmax(0,1.35fr) !important;
+      gap:40px !important;
+    }
+    .grid{grid-template-columns:repeat(2,minmax(0,1fr)) !important;}
+  }
+  @media(max-width:900px){
+    .work-layout{display:block !important;}
+    .filters{
+      position:static !important;
+      height:auto !important;
+      display:flex !important;
+      flex-direction:row !important;
+      flex-wrap:wrap;
+      gap:16px !important;
+      margin-bottom:32px;
+    }
+    .grid{grid-template-columns:repeat(2,minmax(0,1fr)) !important;}
+  }
+  @media(max-width:600px){
+    .grid{grid-template-columns:1fr !important;}
+  }
+'''
 
-          if old_css not in text:
-              raise SystemExit('Expected tile CSS block not found')
-          text = text.replace(old_css, new_css, 1)
-
-          old_render = '''    const bg = p.image\n      ? `background-image:url('${p.image}'); background-size:cover; background-position:center;`\n      : `background:linear-gradient(135deg, ${p.from}, ${p.to});`;\n    const textColor = p.dark ? 'color:#141414;' : '';\n    return `<div class="tile" data-cat="${p.category}" style="${bg}">\n      <span class="tag" style="${textColor}">${p.title}</span>\n    </div>`;\n'''
-
-          new_render = '''    const bg = p.image\n      ? `background-image:url('${p.image}');`\n      : `background:linear-gradient(135deg, ${p.from}, ${p.to});`;\n    const textColor = p.dark ? 'color:#141414;' : '';\n    return `<div class="tile" data-cat="${p.category}">\n      <div class="tile-bg" style="${bg}"></div>\n      <span class="tag" style="${textColor}">${p.title}</span>\n    </div>`;\n'''
-
-          if old_render not in text:
-              raise SystemExit('Expected renderGrid block not found')
-          text = text.replace(old_render, new_render, 1)
+          start = '  /* WORK refinements */'
+          if start in text:
+              before, rest = text.split(start, 1)
+              rest = rest.split(marker, 1)[1]
+              text = before + css + marker + rest
+          else:
+              text = text.replace(marker, css + marker, 1)
 
           path.write_text(text)
           PY
@@ -49,5 +112,5 @@ jobs:
           git config user.name "chatgpt-codex-connector"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
-          git commit -m "Add subtle hover interaction to work cards"
+          git commit -m "Refine work grid and inner image hover"
           git push
