@@ -292,10 +292,25 @@
   .tile{
     position:relative; aspect-ratio:3/5; border-radius:6px; overflow:hidden;
     display:flex; align-items:flex-end; padding:16px;
-    cursor:pointer; transition:transform .4s var(--ease);
+    cursor:pointer;
   }
-  .tile:hover{ transform:translateY(-4px); }
+  .tile-bg{
+    position:absolute; inset:0;
+    background-size:cover; background-position:center;
+    transform:scale(1);
+    transition:transform .65s var(--ease), filter .45s ease;
+    will-change:transform;
+  }
+  .tile::after{
+    content:''; position:absolute; inset:0; pointer-events:none;
+    background:linear-gradient(120deg, transparent 28%, rgba(255,255,255,.10) 48%, transparent 68%);
+    transform:translateX(-120%);
+    transition:transform .7s var(--ease);
+  }
+  .tile:hover .tile-bg{ transform:scale(1.035); filter:saturate(1.04) brightness(1.025); }
+  .tile:hover::after{ transform:translateX(120%); }
   .tile .tag{
+    position:relative; z-index:2;
     font-family:'Pretendard Variable'; font-weight:700; font-size:14px; line-height:1.15;
     color:#fff; text-shadow:0 2px 12px rgba(0,0,0,0.25);
   }
@@ -472,10 +487,11 @@ function renderGrid(){
   const grid = document.getElementById('grid');
   grid.innerHTML = PROJECTS.map(p => {
     const bg = p.image
-      ? `background-image:url('${p.image}'); background-size:cover; background-position:center;`
+      ? `background-image:url('${p.image}');`
       : `background:linear-gradient(135deg, ${p.from}, ${p.to});`;
     const textColor = p.dark ? 'color:#141414;' : '';
-    return `<div class="tile" data-cat="${p.category}" style="${bg}">
+    return `<div class="tile" data-cat="${p.category}">
+      <div class="tile-bg" style="${bg}"></div>
       <span class="tag" style="${textColor}">${p.title}</span>
     </div>`;
   }).join('');
