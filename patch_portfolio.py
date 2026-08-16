@@ -15,54 +15,26 @@ css = r'''
   .filter-btn{font-size:clamp(40.5px,6.48vw,108px)!important;font-weight:800!important;line-height:.86!important;}
   .filter-btn.active{color:transparent!important;background:var(--jeremie-accent)!important;-webkit-background-clip:text!important;background-clip:text!important;}
 
-  /* Persistent menu button: fixed to viewport and always above menu overlay. */
   .burger{
-    position:fixed!important;
-    top:26px!important;
-    right:40px!important;
-    z-index:99999!important;
-    width:42px!important;
-    height:42px!important;
-    border:1px solid currentColor!important;
-    border-radius:0!important;
-    background:transparent!important;
-    display:flex!important;
-    align-items:center!important;
-    justify-content:center!important;
-    flex-direction:column!important;
-    gap:7px!important;
-    padding:0!important;
-    box-sizing:border-box!important;
-    color:#555555!important;
-    mix-blend-mode:normal!important;
-    opacity:1!important;
-    visibility:visible!important;
-    pointer-events:auto!important;
+    position:fixed!important;top:26px!important;right:40px!important;z-index:99999!important;
+    width:42px!important;height:42px!important;border:1px solid currentColor!important;border-radius:0!important;
+    background:transparent!important;display:flex!important;align-items:center!important;justify-content:center!important;
+    flex-direction:column!important;gap:7px!important;padding:0!important;box-sizing:border-box!important;
+    color:#555555!important;mix-blend-mode:normal!important;opacity:1!important;visibility:visible!important;pointer-events:auto!important;
   }
-  .burger span{
-    display:block!important;
-    width:20px!important;
-    height:2px!important;
-    background:currentColor!important;
-    margin:0!important;
-    transform-origin:center!important;
-    opacity:1!important;
-    transition:transform .48s cubic-bezier(.16,.8,.24,1),opacity .25s ease!important;
-  }
+  .burger span{display:block!important;width:20px!important;height:2px!important;background:currentColor!important;margin:0!important;transform-origin:center!important;opacity:1!important;transition:transform .48s cubic-bezier(.16,.8,.24,1),opacity .25s ease!important;}
   .burger span:nth-child(n+3){display:none!important;}
   .burger.open span:nth-child(1){transform:translateY(4.5px) rotate(45deg)!important;}
   .burger.open span:nth-child(2){transform:translateY(-4.5px) rotate(-45deg)!important;}
   .burger.open{color:#333333!important;}
   body.inverted .burger.open{color:#f3f1ea!important;}
-
-  /* Hide old close button: burger is the only menu/close control. */
   .menu-close{display:none!important;}
 
-  /* Freeze the page underneath the menu overlay. */
   html.menu-open,body.menu-open{overscroll-behavior:none!important;}
   body.menu-open{overflow:hidden!important;touch-action:none!important;}
 
-  .global-theme-toggle{position:fixed!important;right:40px!important;bottom:40px!important;z-index:390!important;color:#555555!important;}
+  /* Theme toggle sits clearly above the footer line while keeping the same right alignment. */
+  .global-theme-toggle{position:fixed!important;right:40px!important;bottom:72px!important;z-index:390!important;color:#555555!important;}
   .global-theme-toggle .theme-label{display:none!important;}
   body.inverted .global-theme-toggle{color:#555555!important;}
   body.inverted .hero-title-img{filter:invert(1) hue-rotate(180deg) brightness(1.02) contrast(.96);}
@@ -79,7 +51,7 @@ css = r'''
 
   @media(max-width:700px){
     .burger{top:20px!important;right:20px!important;}
-    .global-theme-toggle{right:20px!important;bottom:24px!important}
+    .global-theme-toggle{right:20px!important;bottom:56px!important}
     .filter-btn{font-size:clamp(36px,12vw,58px)!important;}
     .work-detail-stage{padding:82px 14px 40px}.work-detail-image{width:94vw}.work-detail-close{top:20px;right:20px}
   }
@@ -123,7 +95,6 @@ js = r'''
 
     let burger = oldBurger;
     if (oldBurger && menu) {
-      /* Clone to remove legacy handlers, then move to BODY so no parent stacking context can hide it. */
       burger = oldBurger.cloneNode(true);
       burger.dataset.jeremieBound = '1';
       burger.innerHTML = '<span></span><span></span>';
