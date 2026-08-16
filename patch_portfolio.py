@@ -58,6 +58,10 @@ css = r'''
   /* Hide old close button: burger is the only menu/close control. */
   .menu-close{display:none!important;}
 
+  /* Freeze the page underneath the menu overlay. */
+  html.menu-open,body.menu-open{overscroll-behavior:none!important;}
+  body.menu-open{overflow:hidden!important;touch-action:none!important;}
+
   .global-theme-toggle{position:fixed!important;right:40px!important;bottom:40px!important;z-index:390!important;color:#555555!important;}
   .global-theme-toggle .theme-label{display:none!important;}
   body.inverted .global-theme-toggle{color:#555555!important;}
@@ -94,6 +98,28 @@ js = r'''
     const menu = document.querySelector('.menu-overlay');
     const oldBurger = document.querySelector('.burger');
     const menuClose = document.querySelector('.menu-close');
+    let lockedScrollY = 0;
+
+    const lockMenuScroll = () => {
+      lockedScrollY = window.scrollY || window.pageYOffset || 0;
+      body.classList.add('menu-open');
+      document.documentElement.classList.add('menu-open');
+      body.style.position = 'fixed';
+      body.style.top = `-${lockedScrollY}px`;
+      body.style.left = '0';
+      body.style.right = '0';
+      body.style.width = '100%';
+    };
+    const unlockMenuScroll = () => {
+      body.classList.remove('menu-open');
+      document.documentElement.classList.remove('menu-open');
+      body.style.position = '';
+      body.style.top = '';
+      body.style.left = '';
+      body.style.right = '';
+      body.style.width = '';
+      window.scrollTo(0, lockedScrollY);
+    };
 
     let burger = oldBurger;
     if (oldBurger && menu) {
@@ -105,10 +131,13 @@ js = r'''
       document.body.appendChild(burger);
 
       const setMenu = (open) => {
+        const wasOpen = menu.classList.contains('open');
         menu.classList.toggle('open', open);
         burger.classList.toggle('open', open);
         burger.setAttribute('aria-expanded', open ? 'true' : 'false');
         burger.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+        if (open && !wasOpen) lockMenuScroll();
+        if (!open && wasOpen) unlockMenuScroll();
       };
 
       setMenu(menu.classList.contains('open'));
