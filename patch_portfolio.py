@@ -15,12 +15,12 @@ css = r'''
   .filter-btn{font-size:clamp(40.5px,6.48vw,108px)!important;font-weight:800!important;line-height:.86!important;}
   .filter-btn.active{color:transparent!important;background:var(--jeremie-accent)!important;-webkit-background-clip:text!important;background-clip:text!important;}
 
-  /* One persistent menu button. It stays above the overlay and only its two lines morph. */
+  /* Persistent menu button: fixed to viewport and always above menu overlay. */
   .burger{
     position:fixed!important;
     top:26px!important;
     right:40px!important;
-    z-index:430!important;
+    z-index:99999!important;
     width:42px!important;
     height:42px!important;
     border:1px solid currentColor!important;
@@ -55,7 +55,7 @@ css = r'''
   .burger.open{color:#333333!important;}
   body.inverted .burger.open{color:#f3f1ea!important;}
 
-  /* The old overlay close button is hidden; the fixed burger is the only menu/close control. */
+  /* Hide old close button: burger is the only menu/close control. */
   .menu-close{display:none!important;}
 
   .global-theme-toggle{position:fixed!important;right:40px!important;bottom:40px!important;z-index:390!important;color:#555555!important;}
@@ -95,13 +95,14 @@ js = r'''
     const oldBurger = document.querySelector('.burger');
     const menuClose = document.querySelector('.menu-close');
 
-    /* Replace the burger node once so old click handlers cannot fight the morph state. */
     let burger = oldBurger;
-    if (oldBurger && menu && !oldBurger.dataset.jeremieBound) {
+    if (oldBurger && menu) {
+      /* Clone to remove legacy handlers, then move to BODY so no parent stacking context can hide it. */
       burger = oldBurger.cloneNode(true);
       burger.dataset.jeremieBound = '1';
       burger.innerHTML = '<span></span><span></span>';
       oldBurger.replaceWith(burger);
+      document.body.appendChild(burger);
 
       const setMenu = (open) => {
         menu.classList.toggle('open', open);
@@ -109,6 +110,7 @@ js = r'''
         burger.setAttribute('aria-expanded', open ? 'true' : 'false');
         burger.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
       };
+
       setMenu(menu.classList.contains('open'));
       burger.addEventListener('click', (e) => {
         e.preventDefault();
