@@ -33,7 +33,24 @@ css = r'''
   html.menu-open,body.menu-open{overscroll-behavior:none!important;}
   body.menu-open{overflow:hidden!important;touch-action:none!important;}
 
-  /* Theme toggle sits clearly above the footer line while keeping the same right alignment. */
+  /* Remove the horizontal divider from the menu overlay footer area. */
+  .menu-overlay.open .menu-bottom,
+  .menu-overlay.open .menu-footer,
+  .menu-overlay.open .menu-meta,
+  .menu-overlay.open footer{
+    border-top:none!important;
+    border-bottom:none!important;
+  }
+  .menu-overlay.open .menu-bottom::before,
+  .menu-overlay.open .menu-bottom::after,
+  .menu-overlay.open .menu-footer::before,
+  .menu-overlay.open .menu-footer::after,
+  .menu-overlay.open footer::before,
+  .menu-overlay.open footer::after{
+    display:none!important;
+    content:none!important;
+  }
+
   .global-theme-toggle{position:fixed!important;right:40px!important;bottom:72px!important;z-index:390!important;color:#555555!important;}
   .global-theme-toggle .theme-label{display:none!important;}
   body.inverted .global-theme-toggle{color:#555555!important;}
