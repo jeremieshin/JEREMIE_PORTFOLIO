@@ -1,0 +1,156 @@
+name: Add first Work detail overlay
+
+on:
+  push:
+    paths:
+      - '.github/workflows/add-work-detail-overlay.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Add fullscreen floating detail overlay
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          p = Path('index.html')
+          s = p.read_text()
+
+          css = r'''
+  /* WORK DETAIL OVERLAY START */
+  .work-detail-overlay{
+    position:fixed;
+    inset:0;
+    z-index:420;
+    background:rgba(18,18,18,.94);
+    backdrop-filter:blur(12px);
+    -webkit-backdrop-filter:blur(12px);
+    opacity:0;
+    visibility:hidden;
+    pointer-events:none;
+    transition:opacity .45s var(--ease), visibility .45s;
+    overflow-y:auto;
+    overscroll-behavior:contain;
+  }
+  .work-detail-overlay.open{
+    opacity:1;
+    visibility:visible;
+    pointer-events:auto;
+  }
+  .work-detail-stage{
+    min-height:100%;
+    padding:92px 32px 72px;
+    display:flex;
+    justify-content:center;
+    align-items:flex-start;
+  }
+  .work-detail-image{
+    display:block;
+    width:min(920px,82vw);
+    height:auto;
+    box-shadow:0 42px 120px rgba(0,0,0,.55);
+    transform:translateY(34px) scale(.975);
+    opacity:0;
+    transition:transform .7s cubic-bezier(.16,.8,.24,1),opacity .45s ease;
+  }
+  .work-detail-overlay.open .work-detail-image{
+    transform:translateY(0) scale(1);
+    opacity:1;
+  }
+  .work-detail-close{
+    position:fixed;
+    top:26px;
+    right:40px;
+    z-index:2;
+    width:42px;
+    height:42px;
+    border:1px solid #f3f1ea;
+    border-radius:0;
+    background:transparent;
+    color:#f3f1ea;
+    cursor:pointer;
+    display:grid;
+    place-items:center;
+  }
+  .work-detail-close::before,
+  .work-detail-close::after{
+    content:'';
+    position:absolute;
+    width:19px;
+    height:1.5px;
+    background:currentColor;
+  }
+  .work-detail-close::before{transform:rotate(45deg);}
+  .work-detail-close::after{transform:rotate(-45deg);}
+  body.detail-open{overflow:hidden;}
+  @media(max-width:700px){
+    .work-detail-stage{padding:82px 14px 40px;}
+    .work-detail-image{width:94vw;}
+    .work-detail-close{top:20px;right:20px;}
+  }
+  /* WORK DETAIL OVERLAY END */
+'''
+
+          s = re.sub(r'\n?  /\* WORK DETAIL OVERLAY START \*/.*?/\* WORK DETAIL OVERLAY END \*/\n?', '\n', s, flags=re.S)
+          if '</style>' not in s:
+              raise SystemExit('style tag not found')
+          s = s.replace('</style>', css + '\n</style>', 1)
+
+          overlay = '''\n<div class="work-detail-overlay" id="workDetailOverlay" aria-hidden="true">\n  <button class="work-detail-close" id="workDetailClose" aria-label="Close project detail"></button>\n  <div class="work-detail-stage">\n    <img class="work-detail-image" src="work_01_detail.png" alt="Grand 11st project detail">\n  </div>\n</div>\n'''
+          s = re.sub(r'\n?<div class="work-detail-overlay" id="workDetailOverlay".*?</div>\s*</div>\n?', '\n', s, flags=re.S)
+          if '</body>' not in s:
+              raise SystemExit('body tag not found')
+          s = s.replace('</body>', overlay + '\n</body>', 1)
+
+          js = r'''
+<script id="work-detail-overlay-script">
+(() => {
+  const overlay = document.getElementById('workDetailOverlay');
+  const closeBtn = document.getElementById('workDetailClose');
+  const grid = document.querySelector('.grid');
+  if (!overlay || !closeBtn || !grid) return;
+
+  const openDetail = () => {
+    overlay.classList.add('open');
+    overlay.setAttribute('aria-hidden','false');
+    document.body.classList.add('detail-open');
+    overlay.scrollTop = 0;
+  };
+  const closeDetail = () => {
+    overlay.classList.remove('open');
+    overlay.setAttribute('aria-hidden','true');
+    document.body.classList.remove('detail-open');
+  };
+
+  grid.addEventListener('click', (e) => {
+    const tile = e.target.closest('.tile');
+    if (!tile) return;
+    const firstVisibleTile = grid.querySelector('.tile');
+    if (tile === firstVisibleTile) openDetail();
+  });
+  closeBtn.addEventListener('click', closeDetail);
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) closeDetail(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && overlay.classList.contains('open')) closeDetail(); });
+})();
+</script>
+'''
+          s = re.sub(r'<script id="work-detail-overlay-script">.*?</script>\s*', '', s, flags=re.S)
+          s = s.replace('</body>', js + '\n</body>', 1)
+
+          p.write_text(s)
+          PY
+      - name: Commit overlay
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "Add fullscreen detail overlay for first Work card"
+          git push
