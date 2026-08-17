@@ -365,6 +365,8 @@
 
 
 
+
+
   /* JEREMIE SAFE PATCH START */
   :root{
     --jeremie-accent:linear-gradient(135deg,#ff3d2b 0%,#e32b79 36%,#c12d98 66%,#9336d0 100%);
@@ -402,7 +404,6 @@
     text-decoration:none!important;
   }
 
-  /* Menu and theme controls use the same 42px size and #777777 color. */
   .burger{
     position:fixed!important;top:26px!important;right:40px!important;z-index:99999!important;
     width:42px!important;height:42px!important;min-width:42px!important;min-height:42px!important;
@@ -442,20 +443,30 @@
   }
   .menu-overlay.open > :last-child{border-top:0!important;border-bottom:0!important;box-shadow:none!important;}
 
+  /* Option 03: minimal line theme toggle with a soft moon-to-sun morph. */
   .global-theme-toggle{
     position:fixed!important;right:40px!important;bottom:72px!important;z-index:390!important;
     width:42px!important;height:42px!important;min-width:42px!important;min-height:42px!important;
-    padding:0!important;margin:0!important;border:0!important;background:transparent!important;
-    color:#777777!important;display:flex!important;align-items:center!important;justify-content:center!important;
-    box-sizing:border-box!important;
+    padding:0!important;margin:0!important;border:1px solid #777777!important;border-radius:0!important;
+    background:transparent!important;color:#777777!important;
+    display:flex!important;align-items:center!important;justify-content:center!important;box-sizing:border-box!important;
+    cursor:pointer!important;
   }
-  .global-theme-toggle svg{width:42px!important;height:42px!important;display:block!important;overflow:visible!important;}
+  .global-theme-toggle svg{width:24px!important;height:24px!important;display:block!important;overflow:visible!important;}
   .global-theme-toggle .theme-label{display:none!important;}
-  .global-theme-toggle .theme-mode-dark{display:block!important;}
-  .global-theme-toggle .theme-mode-light{display:none!important;}
+  .global-theme-toggle .theme-moon,
+  .global-theme-toggle .theme-sun{
+    transform-box:fill-box;
+    transform-origin:center;
+    transition:opacity .36s ease,transform .5s cubic-bezier(.16,.8,.24,1);
+  }
+  .global-theme-toggle .theme-moon{opacity:1;transform:rotate(0deg) scale(1);}
+  .global-theme-toggle .theme-sun{opacity:0;transform:rotate(-40deg) scale(.72);}
   body.inverted .global-theme-toggle{color:#777777!important;}
-  body.inverted .global-theme-toggle .theme-mode-dark{display:none!important;}
-  body.inverted .global-theme-toggle .theme-mode-light{display:block!important;}
+  body.inverted .global-theme-toggle .theme-moon{opacity:0;transform:rotate(35deg) scale(.72);}
+  body.inverted .global-theme-toggle .theme-sun{opacity:1;transform:rotate(0deg) scale(1);}
+  .global-theme-toggle:hover svg{transform:scale(1.06);transition:transform .22s ease;}
+  .global-theme-toggle:active svg{transform:scale(.94);}
   body.inverted .hero-title-img{filter:invert(1) hue-rotate(180deg) brightness(1.02) contrast(.96);}
 
   .work-detail-overlay{
@@ -479,9 +490,7 @@
   body.detail-open .burger,
   body.detail-open .global-theme-toggle{opacity:0!important;visibility:hidden!important;pointer-events:none!important;}
 
-  @media(max-width:900px){
-    .work-detail-image{width:calc(100vw - 56px)!important;}
-  }
+  @media(max-width:900px){.work-detail-image{width:calc(100vw - 56px)!important;}}
   @media(max-width:700px){
     .burger{top:20px!important;right:20px!important;}
     .global-theme-toggle{right:20px!important;bottom:56px!important;}
@@ -718,6 +727,8 @@ document.querySelectorAll('.tile, .contact h2, .filters').forEach(el => {
 
 
 
+
+
 <script id="jeremie-safe-patch">
 (() => {
   const ready = (fn) => document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', fn) : fn();
@@ -729,135 +740,77 @@ document.querySelectorAll('.tile, .contact h2, .filters').forEach(el => {
     const oldBurger = document.querySelector('.burger');
     const menuClose = document.querySelector('.menu-close');
 
-    const lockMenuScroll = () => {
-      body.classList.add('menu-open');
-      root.classList.add('menu-open');
-    };
+    const lockMenuScroll = () => { body.classList.add('menu-open'); root.classList.add('menu-open'); };
     const unlockMenuScroll = () => {
-      body.classList.remove('menu-open');
-      root.classList.remove('menu-open');
-      body.style.position = '';
-      body.style.top = '';
-      body.style.left = '';
-      body.style.right = '';
-      body.style.width = '';
-      body.style.overflow = '';
-      root.style.overflow = '';
+      body.classList.remove('menu-open'); root.classList.remove('menu-open');
+      body.style.position='';body.style.top='';body.style.left='';body.style.right='';body.style.width='';body.style.overflow='';root.style.overflow='';
     };
     unlockMenuScroll();
 
     let burger = oldBurger;
     if (oldBurger && menu) {
       burger = oldBurger.cloneNode(true);
-      burger.dataset.jeremieBound = '1';
-      burger.innerHTML = '<span></span><span></span>';
+      burger.dataset.jeremieBound='1';
+      burger.innerHTML='<span></span><span></span>';
       oldBurger.replaceWith(burger);
       document.body.appendChild(burger);
-
-      const setMenu = (open) => {
-        menu.classList.toggle('open', open);
-        burger.classList.toggle('open', open);
-        burger.setAttribute('aria-expanded', open ? 'true' : 'false');
-        burger.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
-        if (open) lockMenuScroll(); else unlockMenuScroll();
+      const setMenu=(open)=>{
+        menu.classList.toggle('open',open);
+        burger.classList.toggle('open',open);
+        burger.setAttribute('aria-expanded',open?'true':'false');
+        burger.setAttribute('aria-label',open?'Close menu':'Open menu');
+        if(open) lockMenuScroll(); else unlockMenuScroll();
       };
-
       setMenu(false);
-      burger.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setMenu(!menu.classList.contains('open'));
-      });
-      document.querySelectorAll('.menu-link,.menu-nav a').forEach(link => {
-        link.addEventListener('click', () => setMenu(false));
-      });
-      document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && menu.classList.contains('open')) setMenu(false);
-      });
+      burger.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();setMenu(!menu.classList.contains('open'));});
+      document.querySelectorAll('.menu-link,.menu-nav a').forEach(link=>link.addEventListener('click',()=>setMenu(false)));
+      document.addEventListener('keydown',e=>{if(e.key==='Escape'&&menu.classList.contains('open'))setMenu(false);});
     }
-    if (menuClose) menuClose.setAttribute('aria-hidden','true');
+    if(menuClose) menuClose.setAttribute('aria-hidden','true');
 
-    /* Keep one theme button only, then rebuild its artwork so dark/light icons can never render simultaneously. */
-    const themeButtons = [...document.querySelectorAll('.theme-toggle')];
-    let theme = document.getElementById('themeToggle') || themeButtons[0];
-    document.querySelectorAll('.global-theme-toggle').forEach(el => { if (el !== theme) el.remove(); });
-    themeButtons.forEach(el => { if (el !== theme) el.remove(); });
-    if (theme) {
+    /* One button only. Minimal moon and sun share one center and cross-morph in place. */
+    const themeButtons=[...document.querySelectorAll('.theme-toggle')];
+    let theme=document.getElementById('themeToggle')||themeButtons[0];
+    document.querySelectorAll('.global-theme-toggle').forEach(el=>{if(el!==theme)el.remove();});
+    themeButtons.forEach(el=>{if(el!==theme)el.remove();});
+    if(theme){
       theme.classList.add('global-theme-toggle');
-      theme.innerHTML = `
-        <svg viewBox="0 0 42 42" aria-hidden="true" focusable="false">
-          <g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M18.2 3.8h5.6l1 3.8c1.25.34 2.45.84 3.55 1.48l3.38-1.98 3.96 3.96-1.98 3.38c.64 1.1 1.14 2.3 1.48 3.55l3.81 1v5.6l-3.81 1c-.34 1.25-.84 2.45-1.48 3.55l1.98 3.38-3.96 3.96-3.38-1.98c-1.1.64-2.3 1.14-3.55 1.48l-1 3.81h-5.6l-1-3.81c-1.25-.34-2.45-.84-3.55-1.48l-3.38 1.98-3.96-3.96 1.98-3.38a14.7 14.7 0 0 1-1.48-3.55l-3.81-1v-5.6l3.81-1c.34-1.25.84-2.45 1.48-3.55l-1.98-3.38 3.96-3.96 3.38 1.98c1.1-.64 2.3-1.14 3.55-1.48l1-3.8Z"/>
+      theme.innerHTML=`
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <g class="theme-moon" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16.7 15.9A7.15 7.15 0 0 1 8.1 7.3a6.65 6.65 0 1 0 8.6 8.6Z"/>
           </g>
-          <g class="theme-mode-dark" fill="currentColor">
-            <path d="M25.7 25.4a8.5 8.5 0 0 1-9.1-10.7 7.7 7.7 0 1 0 9.1 10.7Z"/>
-          </g>
-          <g class="theme-mode-light" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
-            <circle cx="21" cy="21" r="4.2"/>
-            <path d="M21 12.3V9.8M21 32.2v-2.5M12.3 21H9.8M32.2 21h-2.5M14.9 14.9l-1.8-1.8M28.9 28.9l-1.8-1.8M27.1 14.9l1.8-1.8M13.1 28.9l1.8-1.8"/>
+          <g class="theme-sun" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
+            <circle cx="12" cy="12" r="3.55"/>
+            <path d="M12 2.6v2.15M12 19.25v2.15M2.6 12h2.15M19.25 12h2.15M5.35 5.35l1.52 1.52M17.13 17.13l1.52 1.52M18.65 5.35l-1.52 1.52M6.87 17.13l-1.52 1.52"/>
           </g>
         </svg>`;
       document.body.appendChild(theme);
     }
 
-    document.querySelectorAll('#workDetailOverlay').forEach(el => el.remove());
-    const overlay = document.createElement('div');
-    overlay.id = 'workDetailOverlay';
-    overlay.className = 'work-detail-overlay';
-    overlay.setAttribute('aria-hidden','true');
-    overlay.innerHTML = '<button class="work-detail-close" type="button" aria-label="Close project detail"><span></span><span></span></button><div class="work-detail-stage"><img class="work-detail-image" src="work_01_detail.png" alt="Grand 11st project detail" draggable="false"></div>';
+    document.querySelectorAll('#workDetailOverlay').forEach(el=>el.remove());
+    const overlay=document.createElement('div');
+    overlay.id='workDetailOverlay';overlay.className='work-detail-overlay';overlay.setAttribute('aria-hidden','true');
+    overlay.innerHTML='<button class="work-detail-close" type="button" aria-label="Close project detail"><span></span><span></span></button><div class="work-detail-stage"><img class="work-detail-image" src="work_01_detail.png" alt="Grand 11st project detail" draggable="false"></div>';
     document.body.appendChild(overlay);
-
-    const closeBtn = overlay.querySelector('.work-detail-close');
-    const detailImage = overlay.querySelector('.work-detail-image');
-    let detailScrollY = 0;
-
-    const openDetail = () => {
-      detailScrollY = window.scrollY || window.pageYOffset || 0;
-      if (menu) menu.classList.remove('open');
-      if (burger) burger.classList.remove('open');
-      unlockMenuScroll();
-      overlay.scrollTop = 0;
-      body.classList.add('detail-open');
-      root.classList.add('detail-open');
-      overlay.classList.add('open');
-      overlay.setAttribute('aria-hidden','false');
+    const closeBtn=overlay.querySelector('.work-detail-close');
+    const detailImage=overlay.querySelector('.work-detail-image');
+    let detailScrollY=0;
+    const openDetail=()=>{
+      detailScrollY=window.scrollY||window.pageYOffset||0;
+      if(menu)menu.classList.remove('open');if(burger)burger.classList.remove('open');unlockMenuScroll();overlay.scrollTop=0;
+      body.classList.add('detail-open');root.classList.add('detail-open');overlay.classList.add('open');overlay.setAttribute('aria-hidden','false');
     };
-
-    const closeDetail = () => {
-      overlay.classList.remove('open');
-      overlay.setAttribute('aria-hidden','true');
-      body.classList.remove('detail-open');
-      root.classList.remove('detail-open');
-      body.style.overflow = '';
-      root.style.overflow = '';
-      overlay.scrollTop = 0;
-      requestAnimationFrame(() => window.scrollTo(0, detailScrollY));
+    const closeDetail=()=>{
+      overlay.classList.remove('open');overlay.setAttribute('aria-hidden','true');body.classList.remove('detail-open');root.classList.remove('detail-open');
+      body.style.overflow='';root.style.overflow='';overlay.scrollTop=0;requestAnimationFrame(()=>window.scrollTo(0,detailScrollY));
     };
-
-    const grid = document.querySelector('.grid');
-    if (grid) {
-      grid.addEventListener('click', e => {
-        const tile = e.target.closest('.tile');
-        if (!tile || tile !== grid.querySelector('.tile')) return;
-        e.preventDefault();
-        e.stopPropagation();
-        openDetail();
-      });
-    }
-
-    closeBtn.addEventListener('click', e => {
-      e.preventDefault();
-      e.stopPropagation();
-      closeDetail();
-    });
-    overlay.addEventListener('click', e => {
-      if (e.target === overlay) closeDetail();
-    });
-    if (detailImage) detailImage.addEventListener('click', e => e.stopPropagation());
-    document.addEventListener('keydown', e => {
-      if (e.key === 'Escape' && overlay.classList.contains('open')) closeDetail();
-    });
+    const grid=document.querySelector('.grid');
+    if(grid)grid.addEventListener('click',e=>{const tile=e.target.closest('.tile');if(!tile||tile!==grid.querySelector('.tile'))return;e.preventDefault();e.stopPropagation();openDetail();});
+    closeBtn.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();closeDetail();});
+    overlay.addEventListener('click',e=>{if(e.target===overlay)closeDetail();});
+    if(detailImage)detailImage.addEventListener('click',e=>e.stopPropagation());
+    document.addEventListener('keydown',e=>{if(e.key==='Escape'&&overlay.classList.contains('open'))closeDetail();});
   });
 })();
 </script>
