@@ -357,11 +357,48 @@
 
 
 
-  /* JEREMIE SAFE PATCH START */
-  :root{--jeremie-accent:linear-gradient(90deg,#17a8e8 0%,#4778eb 50%,#8b39e7 100%);}
 
-  .filter-btn{font-size:clamp(40.5px,6.48vw,108px)!important;font-weight:800!important;line-height:.86!important;}
-  .filter-btn.active{color:transparent!important;background:var(--jeremie-accent)!important;-webkit-background-clip:text!important;background-clip:text!important;}
+
+  /* JEREMIE SAFE PATCH START */
+  :root{
+    /* Reference gradient: red/orange -> magenta -> violet, sampled from the supplied image. */
+    --jeremie-accent:linear-gradient(135deg,#ff3d2b 0%,#e32b79 36%,#c12d98 66%,#9336d0 100%);
+  }
+
+  .filter-btn{
+    font-size:clamp(40.5px,6.48vw,108px)!important;
+    font-weight:800!important;
+    line-height:.86!important;
+    transition:opacity .2s ease!important;
+  }
+
+  /* Work/category navigation: active AND hover use the same reference gradient. */
+  .filter-btn.active,
+  .filter-btn:hover,
+  .filter-btn:focus-visible{
+    color:transparent!important;
+    background:var(--jeremie-accent)!important;
+    -webkit-background-clip:text!important;
+    background-clip:text!important;
+    -webkit-text-fill-color:transparent!important;
+  }
+
+  /* Full-screen menu: remove the old red hover/active color completely. */
+  .menu-overlay .menu-link:hover,
+  .menu-overlay .menu-link:focus-visible,
+  .menu-overlay .menu-link.active,
+  .menu-overlay .menu-link[aria-current="page"],
+  .menu-overlay .menu-nav a:hover,
+  .menu-overlay .menu-nav a:focus-visible,
+  .menu-overlay .menu-nav a.active,
+  .menu-overlay .menu-nav a[aria-current="page"]{
+    color:transparent!important;
+    background:var(--jeremie-accent)!important;
+    -webkit-background-clip:text!important;
+    background-clip:text!important;
+    -webkit-text-fill-color:transparent!important;
+    text-decoration:none!important;
+  }
 
   .burger{
     position:fixed!important;top:26px!important;right:40px!important;z-index:99999!important;
@@ -639,6 +676,8 @@ document.querySelectorAll('.tile, .contact h2, .filters').forEach(el => {
 });
 
 </script>
+
+
 
 
 
