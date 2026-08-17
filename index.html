@@ -359,9 +359,10 @@
 
 
 
+
+
   /* JEREMIE SAFE PATCH START */
   :root{
-    /* Reference gradient: red/orange -> magenta -> violet, sampled from the supplied image. */
     --jeremie-accent:linear-gradient(135deg,#ff3d2b 0%,#e32b79 36%,#c12d98 66%,#9336d0 100%);
   }
 
@@ -371,8 +372,6 @@
     line-height:.86!important;
     transition:opacity .2s ease!important;
   }
-
-  /* Work/category navigation: active AND hover use the same reference gradient. */
   .filter-btn.active,
   .filter-btn:hover,
   .filter-btn:focus-visible{
@@ -383,7 +382,6 @@
     -webkit-text-fill-color:transparent!important;
   }
 
-  /* Full-screen menu: remove the old red hover/active color completely. */
   .menu-overlay .menu-link:hover,
   .menu-overlay .menu-link:focus-visible,
   .menu-overlay .menu-link.active,
@@ -415,22 +413,14 @@
   body.inverted .burger.open{color:#f3f1ea!important;}
   .menu-close{display:none!important;}
 
-  /* Lock only overflow while the menu is open. Do not change body positioning. */
-  html.menu-open,body.menu-open{
-    overflow:hidden!important;
-    overscroll-behavior:none!important;
-  }
+  html.menu-open,body.menu-open{overflow:hidden!important;overscroll-behavior:none!important;}
 
-  /* Remove every possible footer divider inside the open menu overlay. */
   .menu-overlay.open hr,
   .menu-overlay.open [class*="footer"],
   .menu-overlay.open [class*="bottom"],
   .menu-overlay.open [class*="foot"],
   .menu-overlay.open [class*="meta"]{
-    border-top:0!important;
-    border-bottom:0!important;
-    box-shadow:none!important;
-    background-image:none!important;
+    border-top:0!important;border-bottom:0!important;box-shadow:none!important;background-image:none!important;
   }
   .menu-overlay.open hr{display:none!important;}
   .menu-overlay.open [class*="footer"]::before,
@@ -441,36 +431,96 @@
   .menu-overlay.open [class*="foot"]::after,
   .menu-overlay.open [class*="meta"]::before,
   .menu-overlay.open [class*="meta"]::after{
-    border:0!important;
-    box-shadow:none!important;
-    background:none!important;
+    border:0!important;box-shadow:none!important;background:none!important;
   }
-  .menu-overlay.open > :last-child{
-    border-top:0!important;
-    border-bottom:0!important;
-    box-shadow:none!important;
-  }
+  .menu-overlay.open > :last-child{border-top:0!important;border-bottom:0!important;box-shadow:none!important;}
 
   .global-theme-toggle{position:fixed!important;right:40px!important;bottom:72px!important;z-index:390!important;color:#555555!important;}
   .global-theme-toggle .theme-label{display:none!important;}
   body.inverted .global-theme-toggle{color:#555555!important;}
   body.inverted .hero-title-img{filter:invert(1) hue-rotate(180deg) brightness(1.02) contrast(.96);}
 
-  .work-detail-overlay{position:fixed;inset:0;z-index:520;background:rgba(18,18,18,.94);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .45s cubic-bezier(.16,.8,.24,1),visibility .45s;overflow-y:auto;overscroll-behavior:contain;}
-  .work-detail-overlay.open{opacity:1;visibility:visible;pointer-events:auto;}
-  .work-detail-stage{min-height:100%;padding:92px 32px 72px;display:flex;justify-content:center;align-items:flex-start;}
-  .work-detail-image{display:block;width:min(920px,82vw);height:auto;box-shadow:0 42px 120px rgba(0,0,0,.55);transform:translateY(34px) scale(.975);opacity:0;transition:transform .7s cubic-bezier(.16,.8,.24,1),opacity .45s ease;}
-  .work-detail-overlay.open .work-detail-image{transform:translateY(0) scale(1);opacity:1;}
-  .work-detail-close{position:fixed;top:26px;right:40px;z-index:2;width:42px;height:42px;border:1px solid #f3f1ea;border-radius:0;background:transparent;color:#f3f1ea;cursor:pointer;}
-  .work-detail-close:before,.work-detail-close:after{content:'';position:absolute;left:10px;top:19px;width:20px;height:2px;background:currentColor;}
-  .work-detail-close:before{transform:rotate(45deg)}.work-detail-close:after{transform:rotate(-45deg)}
-  body.detail-open{overflow:hidden!important;}
+  /* Work detail: a clean, solid fullscreen layer. No backdrop bleed or blur. */
+  .work-detail-overlay{
+    position:fixed!important;
+    inset:0!important;
+    z-index:100000!important;
+    background:#151515!important;
+    opacity:0;
+    visibility:hidden;
+    pointer-events:none;
+    overflow-y:auto!important;
+    overflow-x:hidden!important;
+    overscroll-behavior:contain!important;
+    -webkit-overflow-scrolling:touch;
+    transition:opacity .35s cubic-bezier(.16,.8,.24,1),visibility .35s!important;
+  }
+  .work-detail-overlay.open{opacity:1!important;visibility:visible!important;pointer-events:auto!important;}
+  .work-detail-stage{
+    position:relative;
+    min-height:100%;
+    padding:76px 24px 96px!important;
+    display:flex!important;
+    justify-content:center!important;
+    align-items:flex-start!important;
+  }
+  .work-detail-image{
+    display:block!important;
+    width:min(1180px,calc(100vw - 160px))!important;
+    max-width:none!important;
+    height:auto!important;
+    object-fit:contain!important;
+    image-rendering:auto!important;
+    transform:translateY(18px)!important;
+    opacity:0;
+    box-shadow:0 30px 90px rgba(0,0,0,.34)!important;
+    transition:transform .5s cubic-bezier(.16,.8,.24,1),opacity .3s ease!important;
+  }
+  .work-detail-overlay.open .work-detail-image{transform:translateY(0)!important;opacity:1!important;}
 
+  .work-detail-close{
+    position:fixed!important;
+    top:26px!important;
+    right:40px!important;
+    z-index:100002!important;
+    width:42px!important;
+    height:42px!important;
+    border:1px solid #f3f1ea!important;
+    border-radius:0!important;
+    background:#151515!important;
+    color:#f3f1ea!important;
+    cursor:pointer!important;
+    padding:0!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+  }
+  .work-detail-close span{
+    position:absolute!important;
+    width:20px!important;
+    height:1.5px!important;
+    background:currentColor!important;
+    display:block!important;
+    transform-origin:center!important;
+  }
+  .work-detail-close span:first-child{transform:rotate(45deg)!important;}
+  .work-detail-close span:last-child{transform:rotate(-45deg)!important;}
+  .work-detail-close::before,.work-detail-close::after{content:none!important;display:none!important;}
+
+  html.detail-open,body.detail-open{overflow:hidden!important;overscroll-behavior:none!important;}
+  body.detail-open .burger,
+  body.detail-open .global-theme-toggle{opacity:0!important;visibility:hidden!important;pointer-events:none!important;}
+
+  @media(max-width:900px){
+    .work-detail-image{width:calc(100vw - 56px)!important;}
+  }
   @media(max-width:700px){
     .burger{top:20px!important;right:20px!important;}
     .global-theme-toggle{right:20px!important;bottom:56px!important}
     .filter-btn{font-size:clamp(36px,12vw,58px)!important;}
-    .work-detail-stage{padding:82px 14px 40px}.work-detail-image{width:94vw}.work-detail-close{top:20px;right:20px}
+    .work-detail-stage{padding:72px 12px 48px!important;}
+    .work-detail-image{width:calc(100vw - 24px)!important;}
+    .work-detail-close{top:20px!important;right:20px!important;}
   }
   /* JEREMIE SAFE PATCH END */
 
@@ -694,6 +744,8 @@ document.querySelectorAll('.tile, .contact h2, .filters').forEach(el => {
 
 
 
+
+
 <script id="jeremie-safe-patch">
 (() => {
   const ready = (fn) => document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', fn) : fn();
@@ -712,7 +764,6 @@ document.querySelectorAll('.tile, .contact h2, .filters').forEach(el => {
     const unlockMenuScroll = () => {
       body.classList.remove('menu-open');
       root.classList.remove('menu-open');
-      /* Clear any stale inline lock styles left by previous versions. */
       body.style.position = '';
       body.style.top = '';
       body.style.left = '';
@@ -721,8 +772,6 @@ document.querySelectorAll('.tile, .contact h2, .filters').forEach(el => {
       body.style.overflow = '';
       root.style.overflow = '';
     };
-
-    /* Always recover from a stale lock on page load. */
     unlockMenuScroll();
 
     let burger = oldBurger;
@@ -765,22 +814,66 @@ document.querySelectorAll('.tile, .contact h2, .filters').forEach(el => {
       document.body.appendChild(theme);
     }
 
-    let overlay = document.getElementById('workDetailOverlay');
-    if (!overlay) {
-      overlay = document.createElement('div');
-      overlay.id = 'workDetailOverlay';
-      overlay.className = 'work-detail-overlay';
+    /* Rebuild the Work detail overlay once, so old duplicate handlers/buttons cannot remain. */
+    document.querySelectorAll('#workDetailOverlay').forEach(el => el.remove());
+    const overlay = document.createElement('div');
+    overlay.id = 'workDetailOverlay';
+    overlay.className = 'work-detail-overlay';
+    overlay.setAttribute('aria-hidden','true');
+    overlay.innerHTML = '<button class="work-detail-close" type="button" aria-label="Close project detail"><span></span><span></span></button><div class="work-detail-stage"><img class="work-detail-image" src="work_01_detail.png" alt="Grand 11st project detail" draggable="false"></div>';
+    document.body.appendChild(overlay);
+
+    const closeBtn = overlay.querySelector('.work-detail-close');
+    const detailImage = overlay.querySelector('.work-detail-image');
+    let detailScrollY = 0;
+
+    const openDetail = () => {
+      detailScrollY = window.scrollY || window.pageYOffset || 0;
+      /* Never allow the menu lock to leak into the detail view. */
+      if (menu) menu.classList.remove('open');
+      if (burger) burger.classList.remove('open');
+      unlockMenuScroll();
+      overlay.scrollTop = 0;
+      body.classList.add('detail-open');
+      root.classList.add('detail-open');
+      overlay.classList.add('open');
+      overlay.setAttribute('aria-hidden','false');
+    };
+
+    const closeDetail = () => {
+      overlay.classList.remove('open');
       overlay.setAttribute('aria-hidden','true');
-      overlay.innerHTML = '<button class="work-detail-close" aria-label="Close project detail"></button><div class="work-detail-stage"><img class="work-detail-image" src="work_01_detail.png" alt="Grand 11st project detail"></div>';
-      document.body.appendChild(overlay);
-    }
-    const close = () => { overlay.classList.remove('open'); overlay.setAttribute('aria-hidden','true'); body.classList.remove('detail-open'); };
-    const open = () => { overlay.classList.add('open'); overlay.setAttribute('aria-hidden','false'); body.classList.add('detail-open'); overlay.scrollTop=0; };
+      body.classList.remove('detail-open');
+      root.classList.remove('detail-open');
+      body.style.overflow = '';
+      root.style.overflow = '';
+      overlay.scrollTop = 0;
+      requestAnimationFrame(() => window.scrollTo(0, detailScrollY));
+    };
+
     const grid = document.querySelector('.grid');
-    if (grid) grid.addEventListener('click', e => { const tile=e.target.closest('.tile'); if(tile && tile===grid.querySelector('.tile')) open(); });
-    const closeBtn=overlay.querySelector('.work-detail-close'); if(closeBtn) closeBtn.addEventListener('click',close);
-    overlay.addEventListener('click',e=>{if(e.target===overlay)close()});
-    document.addEventListener('keydown',e=>{if(e.key==='Escape'&&overlay.classList.contains('open'))close()});
+    if (grid) {
+      grid.addEventListener('click', e => {
+        const tile = e.target.closest('.tile');
+        if (!tile || tile !== grid.querySelector('.tile')) return;
+        e.preventDefault();
+        e.stopPropagation();
+        openDetail();
+      });
+    }
+
+    closeBtn.addEventListener('click', e => {
+      e.preventDefault();
+      e.stopPropagation();
+      closeDetail();
+    });
+    overlay.addEventListener('click', e => {
+      if (e.target === overlay) closeDetail();
+    });
+    if (detailImage) detailImage.addEventListener('click', e => e.stopPropagation());
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && overlay.classList.contains('open')) closeDetail();
+    });
   });
 })();
 </script>
