@@ -30,25 +30,40 @@ css = r'''
   body.inverted .burger.open{color:#f3f1ea!important;}
   .menu-close{display:none!important;}
 
-  html.menu-open,body.menu-open{overscroll-behavior:none!important;}
-  body.menu-open{overflow:hidden!important;touch-action:none!important;}
-
-  /* Remove the horizontal divider from the menu overlay footer area. */
-  .menu-overlay.open .menu-bottom,
-  .menu-overlay.open .menu-footer,
-  .menu-overlay.open .menu-meta,
-  .menu-overlay.open footer{
-    border-top:none!important;
-    border-bottom:none!important;
+  /* Lock only overflow while the menu is open. Do not change body positioning. */
+  html.menu-open,body.menu-open{
+    overflow:hidden!important;
+    overscroll-behavior:none!important;
   }
-  .menu-overlay.open .menu-bottom::before,
-  .menu-overlay.open .menu-bottom::after,
-  .menu-overlay.open .menu-footer::before,
-  .menu-overlay.open .menu-footer::after,
-  .menu-overlay.open footer::before,
-  .menu-overlay.open footer::after{
-    display:none!important;
-    content:none!important;
+
+  /* Remove every possible footer divider inside the open menu overlay. */
+  .menu-overlay.open hr,
+  .menu-overlay.open [class*="footer"],
+  .menu-overlay.open [class*="bottom"],
+  .menu-overlay.open [class*="foot"],
+  .menu-overlay.open [class*="meta"]{
+    border-top:0!important;
+    border-bottom:0!important;
+    box-shadow:none!important;
+    background-image:none!important;
+  }
+  .menu-overlay.open hr{display:none!important;}
+  .menu-overlay.open [class*="footer"]::before,
+  .menu-overlay.open [class*="footer"]::after,
+  .menu-overlay.open [class*="bottom"]::before,
+  .menu-overlay.open [class*="bottom"]::after,
+  .menu-overlay.open [class*="foot"]::before,
+  .menu-overlay.open [class*="foot"]::after,
+  .menu-overlay.open [class*="meta"]::before,
+  .menu-overlay.open [class*="meta"]::after{
+    border:0!important;
+    box-shadow:none!important;
+    background:none!important;
+  }
+  .menu-overlay.open > :last-child{
+    border-top:0!important;
+    border-bottom:0!important;
+    box-shadow:none!important;
   }
 
   .global-theme-toggle{position:fixed!important;right:40px!important;bottom:72px!important;z-index:390!important;color:#555555!important;}
@@ -84,31 +99,30 @@ js = r'''
   ready(() => {
     document.title = 'JEREMIE Studio';
     const body = document.body;
+    const root = document.documentElement;
     const menu = document.querySelector('.menu-overlay');
     const oldBurger = document.querySelector('.burger');
     const menuClose = document.querySelector('.menu-close');
-    let lockedScrollY = 0;
 
     const lockMenuScroll = () => {
-      lockedScrollY = window.scrollY || window.pageYOffset || 0;
       body.classList.add('menu-open');
-      document.documentElement.classList.add('menu-open');
-      body.style.position = 'fixed';
-      body.style.top = `-${lockedScrollY}px`;
-      body.style.left = '0';
-      body.style.right = '0';
-      body.style.width = '100%';
+      root.classList.add('menu-open');
     };
     const unlockMenuScroll = () => {
       body.classList.remove('menu-open');
-      document.documentElement.classList.remove('menu-open');
+      root.classList.remove('menu-open');
+      /* Clear any stale inline lock styles left by previous versions. */
       body.style.position = '';
       body.style.top = '';
       body.style.left = '';
       body.style.right = '';
       body.style.width = '';
-      window.scrollTo(0, lockedScrollY);
+      body.style.overflow = '';
+      root.style.overflow = '';
     };
+
+    /* Always recover from a stale lock on page load. */
+    unlockMenuScroll();
 
     let burger = oldBurger;
     if (oldBurger && menu) {
@@ -119,16 +133,14 @@ js = r'''
       document.body.appendChild(burger);
 
       const setMenu = (open) => {
-        const wasOpen = menu.classList.contains('open');
         menu.classList.toggle('open', open);
         burger.classList.toggle('open', open);
         burger.setAttribute('aria-expanded', open ? 'true' : 'false');
         burger.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
-        if (open && !wasOpen) lockMenuScroll();
-        if (!open && wasOpen) unlockMenuScroll();
+        if (open) lockMenuScroll(); else unlockMenuScroll();
       };
 
-      setMenu(menu.classList.contains('open'));
+      setMenu(false);
       burger.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -136,6 +148,9 @@ js = r'''
       });
       document.querySelectorAll('.menu-link,.menu-nav a').forEach(link => {
         link.addEventListener('click', () => setMenu(false));
+      });
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && menu.classList.contains('open')) setMenu(false);
       });
     }
     if (menuClose) menuClose.setAttribute('aria-hidden','true');
