@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Add seventh card and update visible labels
+      - name: Keep uploaded cards in Promotion and stabilize filtering
         run: |
           python - <<'PY'
           from pathlib import Path
@@ -23,10 +23,9 @@ jobs:
           p = Path('index.html')
           s = p.read_text(encoding='utf-8')
 
-          # Update the safe-patch card setup from 6 to 7 cards.
+          # Keep the uploaded portfolio set at seven cards.
           s = s.replace(".slice(0,6);cards.forEach", ".slice(0,7);cards.forEach")
 
-          # Update existing project titles wherever they are stored in the source data.
           labels = [
               '2024 십일쩔어',
               '2023 우주쇼핑여행',
@@ -36,15 +35,76 @@ jobs:
               '2021 MERRY 11STREET',
               '2021 우주Like 우주패스',
           ]
-          old_titles = ['Verdant Co.', 'Nightgrid', 'Solari', 'Terra Skin', 'Northfield', 'Wide Angle', 'Slow Hours']
-          for old, new in zip(old_titles, labels):
-              s = s.replace(f'title: "{old}"', f'title: "{new}"', 1)
 
-          # Runtime safeguard: ensure first seven cards use the uploaded images,
-          # correct labels, and detail-image mapping without changing other UI.
-          marker_start = '<script id="jeremie-work-07-labels">'
+          # All seven uploaded card views belong to Promotion.
+          # Update the source data so filtering is correct before any runtime patches run.
+          for label in labels:
+              pattern = rf'(title:\s*["\']{re.escape(label)}["\']\s*,\s*category:\s*)["\'](?:project|promotion|guide|ai)["\']'
+              s, count = re.subn(pattern, rf'\1"promotion"', s, count=1)
+              if count != 1:
+                  raise SystemExit(f'Could not set Promotion category for: {label}')
+
+          # Promotion is the default visible filter because the uploaded set belongs there.
+          s = s.replace(
+              '<button class="filter-btn active" data-filter="project">Project</button>',
+              '<button class="filter-btn" data-filter="project">Project</button>',
+              1,
+          )
+          s = s.replace(
+              '<button class="filter-btn" data-filter="promotion">Promotion</button>',
+              '<button class="filter-btn active" data-filter="promotion">Promotion</button>',
+              1,
+          )
+
+          # Replace the original async hide/show filter with deterministic filtering.
+          # The previous onComplete callbacks could finish after a later menu click,
+          # leaving cards hidden under the wrong filter and making the grid look scrambled.
+          old_filter = '''const filterBtns = document.querySelectorAll('.filter-btn');
+function applyFilter(f){
+  document.querySelectorAll('.tile').forEach(t => {
+    const show = f === 'all' || t.dataset.cat === f;
+    gsap.to(t, { opacity: show ? 1 : 0, duration:.25, onComplete:()=>{
+      t.style.display = show ? 'flex' : 'none';
+    }});
+  });
+}
+filterBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    filterBtns.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    applyFilter(btn.dataset.filter);
+  });
+});'''
+          new_filter = '''const filterBtns = document.querySelectorAll('.filter-btn');
+function applyFilter(f){
+  const tiles = [...document.querySelectorAll('.tile')];
+  gsap.killTweensOf(tiles);
+  tiles.forEach(t => {
+    const show = f === 'all' || t.dataset.cat === f;
+    if(show){
+      t.style.display = 'flex';
+      gsap.fromTo(t, {opacity:0}, {opacity:1, duration:.22, overwrite:true});
+    }else{
+      gsap.set(t, {opacity:0});
+      t.style.display = 'none';
+    }
+  });
+}
+filterBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    filterBtns.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    applyFilter(btn.dataset.filter);
+  });
+});
+applyFilter(document.querySelector('.filter-btn.active')?.dataset.filter || 'promotion');'''
+          if old_filter not in s:
+              raise SystemExit('Original Work filter block not found')
+          s = s.replace(old_filter, new_filter, 1)
+
+          # Runtime safeguard for card images, labels and categories.
           s = re.sub(r'\n?<script id="jeremie-work-07-labels">.*?</script>\n?', '\n', s, flags=re.S)
-          js = r'''<script id="jeremie-work-07-labels">(()=>{const run=()=>{const grid=document.querySelector('.grid');if(!grid)return;const labels=['2024 십일쩔어','2023 우주쇼핑여행','2023 블링블링 스프링 쇼핑','2022 awesome',"2022 WHAT'S NEW",'2021 MERRY 11STREET','2021 우주Like 우주패스'];const cards=[...grid.querySelectorAll('.tile')].slice(0,7);cards.forEach((card,i)=>{const n=String(i+1).padStart(2,'0');card.dataset.workIndex=n;const bg=card.querySelector('.tile-bg');if(bg){bg.style.backgroundImage=`url('work_${n}_card.png')`;bg.style.backgroundSize='100% 100%';bg.style.backgroundPosition='center';bg.style.backgroundRepeat='no-repeat'}const candidates=[...card.querySelectorAll('.tile-title,.title,.tile-label,[class*="title"],[class*="label"]')];let el=candidates.find(x=>x.textContent.trim());if(!el){const texts=[...card.querySelectorAll('div,span,p')].filter(x=>x.children.length===0&&x.textContent.trim());el=texts[texts.length-1]}if(el)el.textContent=labels[i]});};document.readyState==='loading'?document.addEventListener('DOMContentLoaded',run):run()})();</script>'''
+          js = r'''<script id="jeremie-work-07-labels">(()=>{const run=()=>{const grid=document.querySelector('.grid');if(!grid)return;const labels=['2024 십일쩔어','2023 우주쇼핑여행','2023 블링블링 스프링 쇼핑','2022 awesome',"2022 WHAT'S NEW",'2021 MERRY 11STREET','2021 우주Like 우주패스'];const cards=[...grid.querySelectorAll('.tile')].slice(0,7);cards.forEach((card,i)=>{const n=String(i+1).padStart(2,'0');card.dataset.workIndex=n;card.dataset.cat='promotion';const bg=card.querySelector('.tile-bg');if(bg){bg.style.backgroundImage=`url('work_${n}_card.png')`;bg.style.backgroundSize='100% 100%';bg.style.backgroundPosition='center';bg.style.backgroundRepeat='no-repeat'}const candidates=[...card.querySelectorAll('.tile-title,.title,.tile-label,[class*="title"],[class*="label"]')];let el=candidates.find(x=>x.textContent.trim());if(!el){const texts=[...card.querySelectorAll('div,span,p')].filter(x=>x.children.length===0&&x.textContent.trim());el=texts[texts.length-1]}if(el)el.textContent=labels[i]});const active=document.querySelector('.filter-btn.active');if(active&&typeof applyFilter==='function')applyFilter(active.dataset.filter)};document.readyState==='loading'?document.addEventListener('DOMContentLoaded',run):run()})();</script>'''
           s = s.replace('</body>', js + '\n</body>', 1)
           p.write_text(s, encoding='utf-8')
           PY
@@ -57,5 +117,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
-          git commit -m "Add seventh work card and update card labels"
+          git commit -m "Fix Promotion categories and Work filtering"
           git push
