@@ -1,0 +1,40 @@
+name: Match Work filter typography to overlay menu
+
+on:
+  push:
+    paths:
+      - '.github/workflows/match-work-filter-typography.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Match Work filter font size and letter spacing to menu
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          s = re.sub(r'\n?<script id="jeremie-work-typography-match">.*?</script>\n?', '\n', s, flags=re.S)
+          js = r'''<script id="jeremie-work-typography-match">(()=>{const apply=()=>{const source=document.querySelector('.menu-overlay .menu-link,.menu-overlay .menu-nav a');if(!source)return;const cs=getComputedStyle(source);document.querySelectorAll('.filter-btn').forEach(btn=>{btn.style.setProperty('font-size',cs.fontSize,'important');btn.style.setProperty('letter-spacing',cs.letterSpacing,'important')})};document.readyState==='loading'?document.addEventListener('DOMContentLoaded',apply):apply();window.addEventListener('resize',apply)})();</script>'''
+          s = s.replace('</body>', js + '\n</body>', 1)
+          p.write_text(s, encoding='utf-8')
+          PY
+      - name: Commit update
+        run: |
+          if git diff --quiet; then
+            echo "No changes needed"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Match Work filter typography to menu"
+          git push
