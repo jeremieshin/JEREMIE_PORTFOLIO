@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Match Work filter typography and increase line height
+      - name: Match Work filter typography with 10 percent larger size
         run: |
           python - <<'PY'
           from pathlib import Path
@@ -23,7 +23,7 @@ jobs:
           p = Path('index.html')
           s = p.read_text(encoding='utf-8')
           s = re.sub(r'\n?<script id="jeremie-work-typography-match">.*?</script>\n?', '\n', s, flags=re.S)
-          js = r'''<script id="jeremie-work-typography-match">(()=>{const apply=()=>{const source=document.querySelector('.menu-overlay .menu-link,.menu-overlay .menu-nav a');if(!source)return;const cs=getComputedStyle(source);document.querySelectorAll('.filter-btn').forEach(btn=>{btn.style.setProperty('font-size',cs.fontSize,'important');btn.style.setProperty('letter-spacing',cs.letterSpacing,'important');btn.style.setProperty('line-height','1.08','important')})};document.readyState==='loading'?document.addEventListener('DOMContentLoaded',apply):apply();window.addEventListener('resize',apply)})();</script>'''
+          js = r'''<script id="jeremie-work-typography-match">(()=>{const apply=()=>{const source=document.querySelector('.menu-overlay .menu-link,.menu-overlay .menu-nav a');if(!source)return;const cs=getComputedStyle(source);const base=parseFloat(cs.fontSize);document.querySelectorAll('.filter-btn').forEach(btn=>{btn.style.setProperty('font-size',(base*1.1)+'px','important');btn.style.setProperty('letter-spacing',cs.letterSpacing,'important');btn.style.setProperty('line-height','1.08','important')})};document.readyState==='loading'?document.addEventListener('DOMContentLoaded',apply):apply();window.addEventListener('resize',apply)})();</script>'''
           s = s.replace('</body>', js + '\n</body>', 1)
           p.write_text(s, encoding='utf-8')
           PY
@@ -36,5 +36,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
-          git commit -m "Increase Work menu line height"
+          git commit -m "Increase Work filter menu size by 10 percent"
           git push
