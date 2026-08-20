@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Center only the main hero image and match background
+      - name: Target the actual main visual only
         run: |
           python - <<'PY'
           from pathlib import Path
@@ -23,26 +23,60 @@ jobs:
           p = Path('index.html')
           s = p.read_text(encoding='utf-8')
           s = re.sub(r'\n?<style id="jeremie-hero-size">.*?</style>\n?', '\n', s, flags=re.S)
-          css = r'''<style id="jeremie-hero-size">
-          .hero{
-            position:relative!important;
-            background:#000000!important;
-            overflow:hidden!important;
-          }
-          .hero-title-img{
-            position:absolute!important;
-            left:50%!important;
-            top:50%!important;
-            width:70%!important;
-            max-width:70%!important;
-            height:auto!important;
-            display:block!important;
-            margin:0!important;
-            transform:translate(-50%,-50%)!important;
-            transform-origin:center center!important;
-          }
-          </style>'''
-          s = s.replace('</head>', css + '\n</head>', 1)
+          s = re.sub(r'\n?<script id="jeremie-hero-center">.*?</script>\n?', '\n', s, flags=re.S)
+          js = r'''<script id="jeremie-hero-center">(()=>{
+          const run=()=>{
+            const title=document.querySelector('.hero-title-img');
+            if(!title)return;
+            let section=title.closest('section');
+            if(!section){
+              let n=title.parentElement;
+              while(n&&n!==document.body){
+                const r=n.getBoundingClientRect();
+                if(r.width>=innerWidth*.85&&r.height>=innerHeight*.75){section=n;break}
+                n=n.parentElement;
+              }
+            }
+            if(!section)return;
+            section.style.setProperty('position','relative','important');
+            section.style.setProperty('background','#000000','important');
+            section.style.setProperty('overflow','hidden','important');
+
+            const items=[...section.querySelectorAll('img,canvas,video,svg')].filter(el=>{
+              if(el===title||title.contains(el)||el.contains(title))return false;
+              const r=el.getBoundingClientRect();
+              return r.width>320&&r.height>220;
+            });
+            const media=items.sort((a,b)=>{
+              const ar=a.getBoundingClientRect(),br=b.getBoundingClientRect();
+              return br.width*br.height-ar.width*ar.height;
+            })[0];
+            if(!media)return;
+
+            const ta=[];let t=title;
+            while(t&&t!==section){ta.push(t);t=t.parentElement}
+            let common=ta.find(a=>a.contains(media));
+            let target=media;
+            if(common){
+              const cr=common.getBoundingClientRect(),sr=section.getBoundingClientRect();
+              if(cr.width<sr.width*.96&&cr.height<sr.height*.96&&cr.width>media.getBoundingClientRect().width*.9) target=common;
+            }
+
+            if(target.dataset.jeremieHeroCentered==='1')return;
+            target.dataset.jeremieHeroCentered='1';
+            target.style.setProperty('position','absolute','important');
+            target.style.setProperty('left','50%','important');
+            target.style.setProperty('top','50%','important');
+            target.style.setProperty('margin','0','important');
+            target.style.setProperty('transform','translate(-50%,-50%) scale(.70)','important');
+            target.style.setProperty('transform-origin','center center','important');
+            target.style.setProperty('max-width','none','important');
+            target.style.setProperty('max-height','none','important');
+          };
+          document.readyState==='loading'?document.addEventListener('DOMContentLoaded',()=>requestAnimationFrame(()=>requestAnimationFrame(run))):requestAnimationFrame(()=>requestAnimationFrame(run));
+          window.addEventListener('load',run,{once:true});
+          })();</script>'''
+          s = s.replace('</body>', js + '\n</body>', 1)
           p.write_text(s, encoding='utf-8')
           PY
       - name: Commit update
@@ -54,5 +88,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
-          git commit -m "Center hero image and match black background"
+          git commit -m "Target actual hero visual and center it"
           git push
