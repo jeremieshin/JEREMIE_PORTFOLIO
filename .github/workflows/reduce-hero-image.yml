@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Reduce only the main hero image
+      - name: Center only the main hero image and match background
         run: |
           python - <<'PY'
           from pathlib import Path
@@ -24,13 +24,22 @@ jobs:
           s = p.read_text(encoding='utf-8')
           s = re.sub(r'\n?<style id="jeremie-hero-size">.*?</style>\n?', '\n', s, flags=re.S)
           css = r'''<style id="jeremie-hero-size">
+          .hero{
+            position:relative!important;
+            background:#000000!important;
+            overflow:hidden!important;
+          }
           .hero-title-img{
+            position:absolute!important;
+            left:50%!important;
+            top:50%!important;
             width:70%!important;
             max-width:70%!important;
             height:auto!important;
             display:block!important;
-            margin-left:auto!important;
-            margin-right:auto!important;
+            margin:0!important;
+            transform:translate(-50%,-50%)!important;
+            transform-origin:center center!important;
           }
           </style>'''
           s = s.replace('</head>', css + '\n</head>', 1)
@@ -45,5 +54,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
-          git commit -m "Reduce main hero image by 30 percent"
+          git commit -m "Center hero image and match black background"
           git push
