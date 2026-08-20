@@ -1,0 +1,155 @@
+name: Sync Promotion assets
+
+on:
+  push:
+    paths:
+      - '*.png'
+      - '.github/workflows/sync-promotion-assets.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Promotion cards only from uploaded files
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re, json
+
+          root = Path('.')
+          card_re = re.compile(r'^(\d{8})_Promotion_(.+)_card\.png$', re.I)
+          detail_re = re.compile(r'^(\d{8})_Promotion_(.+)_detail\.png$', re.I)
+
+          cards = {}
+          details = {}
+          for f in root.glob('*.png'):
+            m = card_re.match(f.name)
+            if m:
+              cards[(m.group(1), m.group(2))] = f.name
+              continue
+            m = detail_re.match(f.name)
+            if m:
+              details[(m.group(1), m.group(2))] = f.name
+
+          items = []
+          for key, card in cards.items():
+            date, name = key
+            items.append({
+              'date': date,
+              'name': name,
+              'card': card,
+              'detail': details.get(key, '')
+            })
+
+          # Newest first, matching the existing portfolio ordering direction.
+          items.sort(key=lambda x: (x['date'], x['name']), reverse=True)
+
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          s = re.sub(r'\n?<script id="jeremie-promotion-assets">.*?</script>\n?', '\n', s, flags=re.S)
+
+          payload = json.dumps(items, ensure_ascii=False)
+          js = f'''<script id="jeremie-promotion-assets">(()=>{{
+          const ITEMS={payload};
+          const esc=s=>s.replace(/(["'\\])/g,'\\$1');
+          let template=null;
+
+          const getGrid=()=>document.querySelector('.work-grid,.grid');
+          const getPromotionBtn=()=>[...document.querySelectorAll('.filter-btn')].find(b=>b.textContent.trim().toUpperCase()==='PROMOTION');
+
+          const openDetail=(src)=>{{
+            if(!src)return;
+            let ov=document.getElementById('jeremie-detail-overlay');
+            if(!ov){{
+              ov=document.createElement('div');
+              ov.id='jeremie-detail-overlay';
+              ov.style.cssText='position:fixed;inset:0;z-index:99999;background:#000;overflow:auto;display:none;';
+              ov.innerHTML='<button aria-label="close" style="position:fixed;right:24px;top:18px;z-index:2;background:transparent;border:0;color:#fff;font-size:34px;line-height:1;cursor:pointer">×</button><img style="display:block;width:100%;height:auto;margin:0 auto" />';
+              ov.querySelector('button').addEventListener('click',()=>{{ov.style.display='none';document.body.style.overflow='';}});
+              ov.addEventListener('click',e=>{{if(e.target===ov){{ov.style.display='none';document.body.style.overflow='';}}}});
+              document.addEventListener('keydown',e=>{{if(e.key==='Escape'&&ov.style.display!=='none'){{ov.style.display='none';document.body.style.overflow='';}}}});
+              document.body.appendChild(ov);
+            }}
+            ov.querySelector('img').src=encodeURI(src);
+            ov.style.display='block';
+            ov.scrollTop=0;
+            document.body.style.overflow='hidden';
+          }};
+
+          const renderPromotion=()=>{{
+            const grid=getGrid();
+            if(!grid)return;
+            const existing=[...grid.querySelectorAll('.tile')];
+            if(!template&&existing[0])template=existing[0].cloneNode(true);
+
+            // Remove every placeholder/example tile in Promotion.
+            existing.forEach(el=>el.remove());
+
+            ITEMS.forEach(item=>{{
+              let tile=template?template.cloneNode(true):document.createElement('div');
+              tile.classList.add('tile');
+              tile.removeAttribute('style');
+              tile.dataset.category='Promotion';
+              tile.dataset.date=item.date;
+              tile.dataset.name=item.name;
+              tile.dataset.detail=item.detail;
+
+              let bg=tile.querySelector('.tile-bg');
+              if(!bg){{bg=document.createElement('div');bg.className='tile-bg';tile.appendChild(bg);}}
+              bg.style.backgroundImage=`url("${{encodeURI(item.card)}}")`;
+              bg.style.backgroundSize='cover';
+              bg.style.backgroundPosition='center';
+              bg.style.backgroundRepeat='no-repeat';
+
+              const imgs=[...tile.querySelectorAll('img')];
+              if(imgs.length){{
+                imgs[0].src=encodeURI(item.card);
+                imgs[0].alt=item.name;
+                imgs.slice(1).forEach(img=>img.remove());
+              }}
+
+              tile.querySelectorAll('.tile-title,.tile-label,.tile-caption,.tile-meta,.title,.label').forEach(el=>el.remove());
+              [...tile.children].forEach(el=>{{
+                if(el!==bg&&el.tagName!=='IMG'&&!el.classList.contains('tile-bg')) el.style.display='none';
+              }});
+
+              tile.addEventListener('click',e=>{{e.preventDefault();e.stopPropagation();openDetail(item.detail);}});
+              grid.appendChild(tile);
+            }});
+
+            // Re-apply existing sizing/hover patch if it exists.
+            window.dispatchEvent(new Event('resize'));
+          }};
+
+          const init=()=>{{
+            const btn=getPromotionBtn();
+            if(!btn)return;
+            btn.addEventListener('click',()=>requestAnimationFrame(()=>requestAnimationFrame(renderPromotion)));
+            // If Promotion is the currently active/default category, render immediately.
+            const active=btn.classList.contains('active')||getComputedStyle(btn).backgroundImage!=='none';
+            if(active)requestAnimationFrame(()=>requestAnimationFrame(renderPromotion));
+          }};
+
+          document.readyState==='loading'?document.addEventListener('DOMContentLoaded',init):init();
+          }})();</script>'''
+
+          s = s.replace('</body>', js + '\n</body>', 1)
+          p.write_text(s, encoding='utf-8')
+          print(f'Synced {{len(items)}} Promotion cards')
+          PY
+      - name: Commit generated Promotion data
+        run: |
+          if git diff --quiet; then
+            echo "No changes needed"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Sync Promotion cards from uploaded assets"
+          git push
