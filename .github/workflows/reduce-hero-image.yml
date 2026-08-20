@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Target the actual main visual only
+      - name: Scale only the actual main visual to 80 percent
         run: |
           python - <<'PY'
           from pathlib import Path
@@ -22,60 +22,54 @@ jobs:
 
           p = Path('index.html')
           s = p.read_text(encoding='utf-8')
+
+          # Remove every previous hero patch that could override position/transform.
           s = re.sub(r'\n?<style id="jeremie-hero-size">.*?</style>\n?', '\n', s, flags=re.S)
           s = re.sub(r'\n?<script id="jeremie-hero-center">.*?</script>\n?', '\n', s, flags=re.S)
-          js = r'''<script id="jeremie-hero-center">(()=>{
-          const run=()=>{
+          s = re.sub(r'\n?<script id="jeremie-hero-scale80">.*?</script>\n?', '\n', s, flags=re.S)
+
+          js = r'''<script id="jeremie-hero-scale80">(()=>{
+          const applyHeroScale=()=>{
             const title=document.querySelector('.hero-title-img');
             if(!title)return;
+
             let section=title.closest('section');
             if(!section){
-              let n=title.parentElement;
-              while(n&&n!==document.body){
-                const r=n.getBoundingClientRect();
-                if(r.width>=innerWidth*.85&&r.height>=innerHeight*.75){section=n;break}
-                n=n.parentElement;
+              let node=title.parentElement;
+              while(node&&node!==document.body){
+                const r=node.getBoundingClientRect();
+                if(r.width>=innerWidth*.85&&r.height>=innerHeight*.70){section=node;break}
+                node=node.parentElement;
               }
             }
             if(!section)return;
-            section.style.setProperty('position','relative','important');
-            section.style.setProperty('background','#000000','important');
-            section.style.setProperty('overflow','hidden','important');
 
-            const items=[...section.querySelectorAll('img,canvas,video,svg')].filter(el=>{
+            // Only change the requested background. Preserve all existing layout values.
+            section.style.setProperty('background-color','#000000','important');
+
+            // Find the same large hero visual, but DO NOT touch its position or transform.
+            const candidates=[...section.querySelectorAll('img,canvas,video,svg')].filter(el=>{
               if(el===title||title.contains(el)||el.contains(title))return false;
               const r=el.getBoundingClientRect();
               return r.width>320&&r.height>220;
             });
-            const media=items.sort((a,b)=>{
-              const ar=a.getBoundingClientRect(),br=b.getBoundingClientRect();
-              return br.width*br.height-ar.width*ar.height;
+            if(!candidates.length)return;
+
+            const media=candidates.sort((a,b)=>{
+              const ar=a.getBoundingClientRect(), br=b.getBoundingClientRect();
+              return (br.width*br.height)-(ar.width*ar.height);
             })[0];
-            if(!media)return;
 
-            const ta=[];let t=title;
-            while(t&&t!==section){ta.push(t);t=t.parentElement}
-            let common=ta.find(a=>a.contains(media));
-            let target=media;
-            if(common){
-              const cr=common.getBoundingClientRect(),sr=section.getBoundingClientRect();
-              if(cr.width<sr.width*.96&&cr.height<sr.height*.96&&cr.width>media.getBoundingClientRect().width*.9) target=common;
-            }
-
-            if(target.dataset.jeremieHeroCentered==='1')return;
-            target.dataset.jeremieHeroCentered='1';
-            target.style.setProperty('position','absolute','important');
-            target.style.setProperty('left','50%','important');
-            target.style.setProperty('top','50%','important');
-            target.style.setProperty('margin','0','important');
-            target.style.setProperty('transform','translate(-50%,-50%) scale(.70)','important');
-            target.style.setProperty('transform-origin','center center','important');
-            target.style.setProperty('max-width','none','important');
-            target.style.setProperty('max-height','none','important');
+            // Scale from the visual's own center. CSS individual scale preserves any existing transform.
+            media.style.setProperty('scale','.8','important');
+            media.style.setProperty('transform-origin','center center','important');
           };
-          document.readyState==='loading'?document.addEventListener('DOMContentLoaded',()=>requestAnimationFrame(()=>requestAnimationFrame(run))):requestAnimationFrame(()=>requestAnimationFrame(run));
-          window.addEventListener('load',run,{once:true});
+
+          const schedule=()=>requestAnimationFrame(()=>requestAnimationFrame(applyHeroScale));
+          document.readyState==='loading'?document.addEventListener('DOMContentLoaded',schedule):schedule();
+          window.addEventListener('load',applyHeroScale,{once:true});
           })();</script>'''
+
           s = s.replace('</body>', js + '\n</body>', 1)
           p.write_text(s, encoding='utf-8')
           PY
@@ -88,5 +82,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
-          git commit -m "Target actual hero visual and center it"
+          git commit -m "Fix hero image at 80 percent without layout overrides"
           git push
