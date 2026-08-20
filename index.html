@@ -385,9 +385,6 @@
   opacity:0!important;
   visibility:hidden!important;
   pointer-events:none!important;
-  background:rgba(12,12,12,.82)!important;
-  -webkit-backdrop-filter:blur(3px);
-  backdrop-filter:blur(3px);
   transition:opacity .28s cubic-bezier(.2,.7,.2,1),visibility .28s cubic-bezier(.2,.7,.2,1)!important;
 }
 .menu-overlay.open{
@@ -395,26 +392,25 @@
   visibility:visible!important;
   pointer-events:auto!important;
 }
-.menu-overlay .menu-link,
-.menu-overlay .menu-nav a{
+.menu-overlay .menu-nav{
   opacity:0;
   transform:translateY(18px);
   transition:opacity .30s cubic-bezier(.2,.7,.2,1),transform .30s cubic-bezier(.2,.7,.2,1)!important;
-  will-change:opacity,transform;
 }
-.menu-overlay.open .menu-link,
-.menu-overlay.open .menu-nav a{
+.menu-overlay.open .menu-nav{
   opacity:1;
   transform:translateY(0);
 }
-.menu-overlay.open .menu-link:nth-child(2),
-.menu-overlay.open .menu-nav a:nth-child(2){transition-delay:.03s!important}
-.menu-overlay.open .menu-link:nth-child(3),
-.menu-overlay.open .menu-nav a:nth-child(3){transition-delay:.06s!important}
-.menu-overlay.open .menu-link:nth-child(4),
-.menu-overlay.open .menu-nav a:nth-child(4){transition-delay:.09s!important}
-.menu-overlay.open .menu-link:nth-child(5),
-.menu-overlay.open .menu-nav a:nth-child(5){transition-delay:.12s!important}
+.menu-overlay .menu-link,
+.menu-overlay .menu-nav a{
+  transform-origin:left center!important;
+  transition:transform .22s cubic-bezier(.2,.7,.2,1),opacity .22s ease!important;
+  will-change:transform;
+}
+.menu-overlay .menu-link:hover,
+.menu-overlay .menu-nav a:hover{
+  transform:scale(.90)!important;
+}
 </style>
 </head>
 <body>
