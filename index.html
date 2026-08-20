@@ -644,57 +644,46 @@ document.querySelectorAll('.tile, .contact h2, .filters').forEach(el => {
 <script id="jeremie-work-filter-order">(()=>{const run=()=>{const buttons=[...document.querySelectorAll('.filter-btn')];const promotion=buttons.find(b=>b.textContent.trim().toLowerCase()==='promotion');const project=buttons.find(b=>b.textContent.trim().toLowerCase()==='project');if(!promotion||!project)return;const parent=promotion.parentElement;if(parent&&project.parentElement===parent){parent.insertBefore(promotion,project)}};document.readyState==='loading'?document.addEventListener('DOMContentLoaded',run):run()})();</script>
 <script id="jeremie-promotion-only-fix">(()=>{const run=()=>{const grid=document.querySelector('.work-grid,.grid');if(!grid)return;const labels=['2024 십일쩔어','2023 우주쇼핑여행','2023 블링블링 스프링 쇼핑','2022 awesome',"2022 WHAT'S NEW",'2021 MERRY 11STREET','2021 우주Like 우주패스'];const cards=[...grid.querySelectorAll('.tile')];cards.slice(0,7).forEach((card,i)=>{const n=String(i+1).padStart(2,'0');card.dataset.workIndex=n;card.dataset.cat='promotion';card.setAttribute('data-category','promotion');const bg=card.querySelector('.tile-bg');if(bg){bg.style.backgroundImage=`url('work_${n}_card.png')`;bg.style.backgroundSize='100% 100%';bg.style.backgroundPosition='center';bg.style.backgroundRepeat='no-repeat'}const candidates=[...card.querySelectorAll('.tile-title,.title,.tile-label,[class*="title"],[class*="label"]')];let el=candidates.find(x=>x.textContent.trim());if(!el){const texts=[...card.querySelectorAll('div,span,p')].filter(x=>x.children.length===0&&x.textContent.trim());el=texts[texts.length-1]}if(el)el.textContent=labels[i]});const buttons=[...document.querySelectorAll('.filter-btn')];buttons.forEach(b=>b.classList.remove('active'));const promo=buttons.find(b=>(b.dataset.filter||'').toLowerCase()==='promotion');if(promo)promo.classList.add('active');const filter=(f)=>{const value=(f||'promotion').toLowerCase();cards.forEach((card,i)=>{const isUploaded=i<7;const cat=(card.dataset.cat||card.dataset.category||'').toLowerCase();const show=value==='all'||(value==='promotion'?isUploaded||cat==='promotion':!isUploaded&&cat===value);card.style.display=show?'flex':'none';card.style.opacity=show?'1':'0'})};buttons.forEach(btn=>{btn.onclick=(e)=>{e.preventDefault();buttons.forEach(b=>b.classList.remove('active'));btn.classList.add('active');filter(btn.dataset.filter)}});filter('promotion')};document.readyState==='loading'?document.addEventListener('DOMContentLoaded',run):run()})();</script>
 <script id="jeremie-work-typography-match">(()=>{const CARD_W=262;const CARD_RATIO=1.56;const GAP=14;const HOVER_INSET=14;const apply=()=>{const source=document.querySelector('.menu-overlay .menu-link,.menu-overlay .menu-nav a');if(source){const cs=getComputedStyle(source);const base=parseFloat(cs.fontSize);document.querySelectorAll('.filter-btn').forEach(btn=>{btn.textContent=btn.textContent.trim().toUpperCase();btn.style.setProperty('font-size',(base*1.32)+'px','important');btn.style.setProperty('letter-spacing',cs.letterSpacing,'important');btn.style.setProperty('line-height','1.04','important');btn.style.setProperty('margin','0 0 8px 0','important');btn.style.setProperty('white-space','nowrap','important');btn.style.setProperty('overflow','visible','important');btn.style.setProperty('max-width','none','important');btn.style.setProperty('width','max-content','important');btn.style.setProperty('display','block','important');btn.style.setProperty('transform-origin','left center','important');btn.style.setProperty('transition','transform .28s cubic-bezier(.2,.7,.2,1)','important');if(!btn.dataset.jeremieMenuHover){btn.dataset.jeremieMenuHover='1';btn.addEventListener('mouseenter',()=>btn.style.setProperty('transform','scale(.92)','important'));btn.addEventListener('mouseleave',()=>btn.style.setProperty('transform','scale(1)','important'))}})}const work=document.querySelector('.work');const layout=document.querySelector('.work-layout');const sidebar=document.querySelector('.work-sidebar,.filters');const grid=document.querySelector('.work-grid,.grid');if(!grid)return;const surface=document.body.classList.contains('inverted')?'#000':'#fff';if(work)work.style.setProperty('background',surface,'important');if(layout)layout.style.setProperty('background',surface,'important');if(sidebar)sidebar.style.setProperty('background',surface,'important');grid.style.setProperty('background',surface,'important');if(window.innerWidth>900){if(work){work.style.setProperty('padding-left','40px','important');work.style.setProperty('padding-right','50px','important');work.style.setProperty('overflow','visible','important')}if(layout){layout.style.setProperty('gap','0','important');layout.style.setProperty('position','relative','important');layout.style.setProperty('overflow','visible','important')}if(sidebar){sidebar.style.setProperty('position','sticky','important');sidebar.style.setProperty('top','0','important');sidebar.style.setProperty('z-index','3','important');sidebar.style.setProperty('flex','0 0 430px','important');sidebar.style.setProperty('width','430px','important');sidebar.style.setProperty('min-width','430px','important');sidebar.style.setProperty('overflow','visible','important')}grid.style.setProperty('position','relative','important');grid.style.setProperty('z-index','1','important');grid.style.setProperty('display','grid','important');grid.style.setProperty('grid-template-columns',`repeat(auto-fit, ${CARD_W}px)`,'important');grid.style.setProperty('grid-auto-columns',`${CARD_W}px`,'important');grid.style.setProperty('gap',`${GAP}px`,'important');grid.style.setProperty('justify-content','start','important');grid.style.setProperty('align-content','start','important');grid.style.setProperty('flex','1 1 auto','important');grid.style.setProperty('min-width','0','important');grid.style.setProperty('margin-left',`${CARD_W+GAP-120}px`,'important');grid.style.setProperty('margin-right','0','important');grid.style.setProperty('width','auto','important')}document.querySelectorAll('.tile').forEach(tile=>{tile.style.setProperty('width',`${CARD_W}px`,'important');tile.style.setProperty('min-width',`${CARD_W}px`,'important');tile.style.setProperty('max-width',`${CARD_W}px`,'important');tile.style.setProperty('height',`${Math.round(CARD_W*CARD_RATIO)}px`,'important');tile.style.setProperty('min-height',`${Math.round(CARD_W*CARD_RATIO)}px`,'important');tile.style.setProperty('max-height',`${Math.round(CARD_W*CARD_RATIO)}px`,'important');tile.style.setProperty('overflow','hidden','important');tile.style.setProperty('position','relative','important');tile.style.setProperty('box-sizing','border-box','important');tile.style.setProperty('flex','0 0 auto','important');tile.style.setProperty('border-radius','0','important');tile.style.setProperty('box-shadow','none','important');[...tile.children].forEach(el=>{if(!el.classList.contains('tile-bg')&&el.tagName!=='IMG')el.style.setProperty('display','none','important')});const bg=tile.querySelector('.tile-bg');if(bg){[...bg.children].forEach(el=>el.style.setProperty('display','none','important'));bg.style.setProperty('position','absolute','important');bg.style.setProperty('top','0','important');bg.style.setProperty('right','0','important');bg.style.setProperty('bottom','0','important');bg.style.setProperty('left','0','important');bg.style.setProperty('width','auto','important');bg.style.setProperty('height','auto','important');bg.style.setProperty('background-size','cover','important');bg.style.setProperty('background-position','center','important');bg.style.setProperty('border-radius','0','important');bg.style.setProperty('transition','top .20s cubic-bezier(.2,.7,.2,1),right .20s cubic-bezier(.2,.7,.2,1),bottom .20s cubic-bezier(.2,.7,.2,1),left .20s cubic-bezier(.2,.7,.2,1),transform .20s cubic-bezier(.2,.7,.2,1)','important');bg.style.setProperty('transform-origin','center center','important')}const img=tile.querySelector('img');if(img){img.style.setProperty('position','absolute','important');img.style.setProperty('top','0','important');img.style.setProperty('right','0','important');img.style.setProperty('bottom','0','important');img.style.setProperty('left','0','important');img.style.setProperty('width','100%','important');img.style.setProperty('height','100%','important');img.style.setProperty('object-fit','cover','important');img.style.setProperty('border-radius','0','important');img.style.setProperty('transition','top .20s cubic-bezier(.2,.7,.2,1),right .20s cubic-bezier(.2,.7,.2,1),bottom .20s cubic-bezier(.2,.7,.2,1),left .20s cubic-bezier(.2,.7,.2,1),transform .20s cubic-bezier(.2,.7,.2,1)','important');img.style.setProperty('transform-origin','center center','important')}if(!tile.dataset.jeremieHover){tile.dataset.jeremieHover='1';tile.addEventListener('mouseenter',()=>{if(bg){bg.style.setProperty('top',`${HOVER_INSET}px`,'important');bg.style.setProperty('right',`${HOVER_INSET}px`,'important');bg.style.setProperty('bottom',`${HOVER_INSET}px`,'important');bg.style.setProperty('left',`${HOVER_INSET}px`,'important');bg.style.setProperty('transform','scale(1.035)','important')}if(img){img.style.setProperty('top',`${HOVER_INSET}px`,'important');img.style.setProperty('right',`${HOVER_INSET}px`,'important');img.style.setProperty('bottom',`${HOVER_INSET}px`,'important');img.style.setProperty('left',`${HOVER_INSET}px`,'important');img.style.setProperty('transform','scale(1.035)','important')}});tile.addEventListener('mouseleave',()=>{if(bg){bg.style.setProperty('top','0','important');bg.style.setProperty('right','0','important');bg.style.setProperty('bottom','0','important');bg.style.setProperty('left','0','important');bg.style.setProperty('transform','scale(1)','important')}if(img){img.style.setProperty('top','0','important');img.style.setProperty('right','0','important');img.style.setProperty('bottom','0','important');img.style.setProperty('left','0','important');img.style.setProperty('transform','scale(1)','important')}})}})};const bind=()=>{apply();document.querySelectorAll('.filter-btn').forEach(btn=>{if(btn.dataset.jeremieLayoutBind)return;btn.dataset.jeremieLayoutBind='1';btn.addEventListener('click',()=>requestAnimationFrame(()=>requestAnimationFrame(apply)))})};document.readyState==='loading'?document.addEventListener('DOMContentLoaded',bind):bind();window.addEventListener('resize',apply);new MutationObserver(apply).observe(document.body,{attributes:true,attributeFilter:['class']})})();</script>
-<script id="jeremie-hero-center">(()=>{
-const run=()=>{
+<script id="jeremie-hero-scale80">(()=>{
+const applyHeroScale=()=>{
   const title=document.querySelector('.hero-title-img');
   if(!title)return;
+
   let section=title.closest('section');
   if(!section){
-    let n=title.parentElement;
-    while(n&&n!==document.body){
-      const r=n.getBoundingClientRect();
-      if(r.width>=innerWidth*.85&&r.height>=innerHeight*.75){section=n;break}
-      n=n.parentElement;
+    let node=title.parentElement;
+    while(node&&node!==document.body){
+      const r=node.getBoundingClientRect();
+      if(r.width>=innerWidth*.85&&r.height>=innerHeight*.70){section=node;break}
+      node=node.parentElement;
     }
   }
   if(!section)return;
-  section.style.setProperty('position','relative','important');
-  section.style.setProperty('background','#000000','important');
-  section.style.setProperty('overflow','hidden','important');
 
-  const items=[...section.querySelectorAll('img,canvas,video,svg')].filter(el=>{
+  // Only change the requested background. Preserve all existing layout values.
+  section.style.setProperty('background-color','#000000','important');
+
+  // Find the same large hero visual, but DO NOT touch its position or transform.
+  const candidates=[...section.querySelectorAll('img,canvas,video,svg')].filter(el=>{
     if(el===title||title.contains(el)||el.contains(title))return false;
     const r=el.getBoundingClientRect();
     return r.width>320&&r.height>220;
   });
-  const media=items.sort((a,b)=>{
-    const ar=a.getBoundingClientRect(),br=b.getBoundingClientRect();
-    return br.width*br.height-ar.width*ar.height;
+  if(!candidates.length)return;
+
+  const media=candidates.sort((a,b)=>{
+    const ar=a.getBoundingClientRect(), br=b.getBoundingClientRect();
+    return (br.width*br.height)-(ar.width*ar.height);
   })[0];
-  if(!media)return;
 
-  const ta=[];let t=title;
-  while(t&&t!==section){ta.push(t);t=t.parentElement}
-  let common=ta.find(a=>a.contains(media));
-  let target=media;
-  if(common){
-    const cr=common.getBoundingClientRect(),sr=section.getBoundingClientRect();
-    if(cr.width<sr.width*.96&&cr.height<sr.height*.96&&cr.width>media.getBoundingClientRect().width*.9) target=common;
-  }
-
-  if(target.dataset.jeremieHeroCentered==='1')return;
-  target.dataset.jeremieHeroCentered='1';
-  target.style.setProperty('position','absolute','important');
-  target.style.setProperty('left','50%','important');
-  target.style.setProperty('top','50%','important');
-  target.style.setProperty('margin','0','important');
-  target.style.setProperty('transform','translate(-50%,-50%) scale(.70)','important');
-  target.style.setProperty('transform-origin','center center','important');
-  target.style.setProperty('max-width','none','important');
-  target.style.setProperty('max-height','none','important');
+  // Scale from the visual's own center. CSS individual scale preserves any existing transform.
+  media.style.setProperty('scale','.8','important');
+  media.style.setProperty('transform-origin','center center','important');
 };
-document.readyState==='loading'?document.addEventListener('DOMContentLoaded',()=>requestAnimationFrame(()=>requestAnimationFrame(run))):requestAnimationFrame(()=>requestAnimationFrame(run));
-window.addEventListener('load',run,{once:true});
+
+const schedule=()=>requestAnimationFrame(()=>requestAnimationFrame(applyHeroScale));
+document.readyState==='loading'?document.addEventListener('DOMContentLoaded',schedule):schedule();
+window.addEventListener('load',applyHeroScale,{once:true});
 })();</script>
 </body>
 </html>
