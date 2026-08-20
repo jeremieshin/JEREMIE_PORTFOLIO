@@ -1,0 +1,77 @@
+name: Add menu overlay interaction
+
+on:
+  push:
+    paths:
+      - '.github/workflows/menu-overlay-interaction.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Add only menu overlay motion
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          s = re.sub(r'\n?<style id="jeremie-menu-motion">.*?</style>\n?', '\n', s, flags=re.S)
+
+          css = r'''<style id="jeremie-menu-motion">
+          .menu-overlay{
+            opacity:0!important;
+            visibility:hidden!important;
+            pointer-events:none!important;
+            background:rgba(12,12,12,.82)!important;
+            -webkit-backdrop-filter:blur(3px);
+            backdrop-filter:blur(3px);
+            transition:opacity .28s cubic-bezier(.2,.7,.2,1),visibility .28s cubic-bezier(.2,.7,.2,1)!important;
+          }
+          .menu-overlay.open{
+            opacity:1!important;
+            visibility:visible!important;
+            pointer-events:auto!important;
+          }
+          .menu-overlay .menu-link,
+          .menu-overlay .menu-nav a{
+            opacity:0;
+            transform:translateY(18px);
+            transition:opacity .30s cubic-bezier(.2,.7,.2,1),transform .30s cubic-bezier(.2,.7,.2,1)!important;
+            will-change:opacity,transform;
+          }
+          .menu-overlay.open .menu-link,
+          .menu-overlay.open .menu-nav a{
+            opacity:1;
+            transform:translateY(0);
+          }
+          .menu-overlay.open .menu-link:nth-child(2),
+          .menu-overlay.open .menu-nav a:nth-child(2){transition-delay:.03s!important}
+          .menu-overlay.open .menu-link:nth-child(3),
+          .menu-overlay.open .menu-nav a:nth-child(3){transition-delay:.06s!important}
+          .menu-overlay.open .menu-link:nth-child(4),
+          .menu-overlay.open .menu-nav a:nth-child(4){transition-delay:.09s!important}
+          .menu-overlay.open .menu-link:nth-child(5),
+          .menu-overlay.open .menu-nav a:nth-child(5){transition-delay:.12s!important}
+          </style>'''
+
+          s = s.replace('</head>', css + '\n</head>', 1)
+          p.write_text(s, encoding='utf-8')
+          PY
+      - name: Commit update
+        run: |
+          if git diff --quiet; then
+            echo "No changes needed"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Add menu overlay fade interaction"
+          git push
