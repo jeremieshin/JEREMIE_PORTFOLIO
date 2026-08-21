@@ -482,7 +482,8 @@
   <div class="work-top"></div>
   <div class="work-layout">
     <div class="filters">
-      <button class="filter-btn active" data-filter="project">Project</button>
+      <button class="filter-btn active" data-filter="all">All</button>
+      <button class="filter-btn" data-filter="project">Project</button>
       <button class="filter-btn" data-filter="promotion">Promotion</button>
       <button class="filter-btn" data-filter="guide">Guide</button>
       <button class="filter-btn" data-filter="ai">Ai</button>
@@ -590,9 +591,15 @@ const PROJECT_PROJECTS = PROJECT_FILES.map(f => ({
   from: "#101010", to: "#2a2a2a"
 }));
 
+// 실제 업로드된 카드(Promotion + Project)를 파일명 맨 앞 날짜(YYYYMMDD) 기준으로
+// 하나로 합쳐서 최신순 정렬 — 카테고리 상관없이 날짜만 보고 정렬됨
+const REAL_PROJECTS_SORTED = [...PROMOTION_PROJECTS, ...PROJECT_PROJECTS].sort((a, b) => {
+  const dateOf = (p) => parseInt((p.image.match(/^(\d{8})/) || [null, "0"])[1], 10);
+  return dateOf(b) - dateOf(a);
+});
+
 const PROJECTS = [
-  ...PROMOTION_PROJECTS,
-  ...PROJECT_PROJECTS,
+  ...REAL_PROJECTS_SORTED,
   { title: "2021 우주Like 우주패스",   category: "guide",     image: null, from: "#e9e5d8", to: "#c7c2b3", dark: true },
   { title: "Fernway",      category: "ai",        image: null, from: "#c7c2b3", to: "#e9e5d8", dark: true },
   { title: "Back Alley",   category: "guide",     image: null, from: "#1560c4", to: "#57a4ff" },
@@ -660,6 +667,8 @@ filterBtns.forEach(btn => {
     applyFilter(btn.dataset.filter);
   });
 });
+// 기본값: 페이지 로드 시 ALL 필터가 선택된 상태로 시작 (모든 카테고리 카드 노출)
+applyFilter('all');
 
 // ---------- Scroll reveals ----------
 gsap.registerPlugin(ScrollTrigger);
