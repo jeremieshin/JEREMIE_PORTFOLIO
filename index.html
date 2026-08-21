@@ -569,21 +569,38 @@ const PROMOTION_PROJECTS = PROMOTION_FILES.map(f => ({
   from: "#101010", to: "#2a2a2a"
 }));
 
+// ============================================================
+// PROJECT_FILES — Project 카테고리 실제 업로드 파일 (영문 파일명)
+// 앞으로 추가되는 파일은 전부 이 방식(영문 prefix + 한글/영문 자유 title)
+// 으로 등록하면 됩니다. 영문 파일명이라 유니코드 인코딩 문제 없음.
+// ============================================================
+const PROJECT_FILES = [
+  { prefix: "20131101_project_disney",   title: "2013 Disney" },
+  { prefix: "20130601_project_bkl",       title: "2013 BKL" },
+  { prefix: "20130401_project_louis",     title: "2013 Louis" },
+  { prefix: "20130101_project_prradise",  title: "2013 Paradise" },
+  { prefix: "20111101_project_korandoc",  title: "2011 Korando C" }
+];
+
+const PROJECT_PROJECTS = PROJECT_FILES.map(f => ({
+  title: f.title,
+  category: "project",
+  image: encodeMacFilename(f.prefix + "_card.png"),
+  detail: encodeMacFilename(f.prefix + "_detail.png"),
+  from: "#101010", to: "#2a2a2a"
+}));
+
 const PROJECTS = [
   ...PROMOTION_PROJECTS,
-  { title: "2022 WHAT'S NEW",   category: "project",   image: null, from: "#101010", to: "#3a3a3a" },
+  ...PROJECT_PROJECTS,
   { title: "2021 우주Like 우주패스",   category: "guide",     image: null, from: "#e9e5d8", to: "#c7c2b3", dark: true },
   { title: "Fernway",      category: "ai",        image: null, from: "#c7c2b3", to: "#e9e5d8", dark: true },
-  { title: "Monoform",     category: "project",   image: null, from: "#101010", to: "#2b2b2b" },
   { title: "Back Alley",   category: "guide",     image: null, from: "#1560c4", to: "#57a4ff" },
   { title: "Halcyon",      category: "ai",        image: null, from: "#efece3", to: "#d8d2c2", dark: true },
-  { title: "Haven Mall",   category: "project",   image: null, from: "#4d1620", to: "#1a0d10" },
   { title: "Aqua Line",    category: "guide",     image: null, from: "#2a2ee0", to: "#5f5fff" },
   { title: "Chandra Co.",  category: "ai",        image: null, from: "#3a6cf0", to: "#89b3ff" },
-  { title: "Afterglow",    category: "project",   image: null, from: "#4a3a44", to: "#6d5762" },
   { title: "Suds & Co.",   category: "guide",     image: null, from: "#c9a15a", to: "#e6c98b", dark: true },
   { title: "Zero Point",   category: "ai",        image: null, from: "#2733a8", to: "#4b5be0" },
-  { title: "Nova Spark",   category: "project",   image: null, from: "#0a0a0a", to: "#1c1c1c" },
   { title: "Doorframe",    category: "guide",     image: null, from: "#f2f0e8", to: "#e2ddcf", dark: true },
   { title: "Fieldcase",    category: "ai",        image: null, from: "#0a0a0a", to: "#2e2e2e" }
 ];
