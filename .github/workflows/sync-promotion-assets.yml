@@ -1,4 +1,4 @@
-name: Recover page and sync Promotion assets
+name: Sync Promotion assets
 
 on:
   push:
@@ -15,80 +15,97 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Recover page if needed and render uploaded Promotion cards
+      - name: Build Promotion cards only from uploaded files
         run: |
           python - <<'PY'
           from pathlib import Path
-          import re, json, unicodedata, subprocess
+          import re, json, unicodedata
 
-          p = Path('index.html')
-          if (not p.exists()) or p.stat().st_size < 1000:
-              good = subprocess.check_output(['git','show','f28cd672c7f854c7fbe3858ccff2da981d062acd:index.html'])
-              p.write_bytes(good)
-
-          s = p.read_text(encoding='utf-8')
           root = Path('.')
           card_re = re.compile(r'^(\d{8})_Promotion_(.+)_card\.png$', re.I)
           detail_re = re.compile(r'^(\d{8})_Promotion_(.+)_detail\.png$', re.I)
-          cards, details = {}, {}
+
+          cards = {}
+          details = {}
           for f in root.glob('*.png'):
-              n = unicodedata.normalize('NFC', f.name)
-              m = card_re.match(n)
-              if m:
-                  cards[(m.group(1),m.group(2))] = f.name
-                  continue
-              m = detail_re.match(n)
-              if m:
-                  details[(m.group(1),m.group(2))] = f.name
+            normalized = unicodedata.normalize('NFC', f.name)
+            m = card_re.match(normalized)
+            if m:
+              cards[(m.group(1), m.group(2))] = f.name
+              continue
+            m = detail_re.match(normalized)
+            if m:
+              details[(m.group(1), m.group(2))] = f.name
 
-          items=[]
-          for key,card in cards.items():
-              date,name=key
-              items.append({'date':date,'name':name,'card':card,'detail':details.get(key,'')})
-          items.sort(key=lambda x:(x['date'],x['name']), reverse=True)
-          payload=json.dumps(items,ensure_ascii=False)
+          items = []
+          for key, card in cards.items():
+            date, name = key
+            items.append({'date': date, 'name': name, 'card': card, 'detail': details.get(key, '')})
+          items.sort(key=lambda x: (x['date'], x['name']), reverse=True)
 
-          for sid in ['jeremie-promotion-only-fix','jeremie-promotion-assets','jeremie-promotion-final']:
-              s=re.sub(r'\n?<script id="'+re.escape(sid)+r'">.*?</script>\n?','\n',s,flags=re.S)
-
-          s=re.sub(r'<img([^>]*class="[^"]*hero-title-img[^"]*"[^>]*)src="[^"]*"([^>]*)>',
-                   lambda m:'<img'+m.group(1)+'src="260821_main.png"'+m.group(2)+'>',s,count=1,flags=re.I)
-
-          css='''
-<style id="jeremie-promotion-final-style">
-.hero{background:#000000 !important;}
-.hero-title-img{object-fit:contain !important;object-position:center center !important;scale:.8 !important;transform-origin:center center !important;}
-.work-grid,.grid{background:inherit;}
-.tile{position:relative !important;border-radius:0 !important;overflow:hidden !important;box-shadow:none !important;cursor:pointer;}
-.tile .jeremie-card-img{display:block !important;width:100% !important;height:auto !important;opacity:1 !important;visibility:visible !important;object-fit:cover !important;transition:transform .2s cubic-bezier(.2,.7,.2,1),padding .2s cubic-bezier(.2,.7,.2,1) !important;}
-.tile:hover .jeremie-card-img{padding:14px !important;transform:scale(1.035) !important;}
-</style>
-'''
-          s=re.sub(r'\n?<style id="jeremie-promotion-final-style">.*?</style>\n?','\n',s,flags=re.S)
-          s=s.replace('</head>',css+'\n</head>',1)
-
-          js=f'''<script id="jeremie-promotion-final">(()=>{{
-const ITEMS={payload};
-let rendered=false;
-const grid=()=>document.querySelector('.work-grid,.grid');
-const promo=()=>[...document.querySelectorAll('.filter-btn')].find(b=>b.textContent.trim().toUpperCase()==='PROMOTION');
-const openDetail=src=>{{if(!src)return;let o=document.getElementById('jeremie-detail-overlay');if(!o){{o=document.createElement('div');o.id='jeremie-detail-overlay';o.style.cssText='position:fixed;inset:0;z-index:99999;background:#000;overflow:auto;display:none';o.innerHTML='<button type="button" aria-label="close" style="position:fixed;right:24px;top:18px;z-index:2;border:0;background:transparent;color:#fff;font-size:36px;cursor:pointer">×</button><img style="display:block;width:100%;height:auto;margin:0 auto">';o.querySelector('button').onclick=()=>{{o.style.display='none';document.body.style.overflow=''}};document.body.appendChild(o)}}o.querySelector('img').src=encodeURI(src);o.style.display='block';o.scrollTop=0;document.body.style.overflow='hidden'}};
-const render=()=>{{const g=grid();if(!g)return;g.innerHTML='';ITEMS.forEach(item=>{{const t=document.createElement('div');t.className='tile';t.dataset.cat='promotion';t.dataset.category='promotion';const img=document.createElement('img');img.className='jeremie-card-img';img.src=encodeURI(item.card);img.alt=item.name;img.loading='eager';t.appendChild(img);t.onclick=e=>{{e.preventDefault();openDetail(item.detail)}};g.appendChild(t)}});rendered=true;window.dispatchEvent(new Event('resize'))}};
-const init=()=>{{const b=promo();if(b){{b.addEventListener('click',()=>requestAnimationFrame(render));if(b.classList.contains('active'))render();}}else render();setTimeout(()=>{{if(!rendered)render()}},250)}};
-document.readyState==='loading'?document.addEventListener('DOMContentLoaded',init):init();
-}})();</script>'''
-          if '</body>' not in s: raise SystemExit('Recovered page has no body close')
-          s=s.replace('</body>',js+'\n</body>',1)
-          p.write_text(s,encoding='utf-8')
-          print('Promotion cards:',len(items))
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          s = re.sub(r'\n?<script id="jeremie-promotion-assets">.*?</script>\n?', '\n', s, flags=re.S)
+          payload = json.dumps(items, ensure_ascii=False)
+          js = f'''<script id="jeremie-promotion-assets">(()=>{{
+          const ITEMS={payload};
+          let template=null;
+          const getGrid=()=>document.querySelector('.work-grid,.grid');
+          const getPromotionBtn=()=>[...document.querySelectorAll('.filter-btn')].find(b=>b.textContent.trim().toUpperCase()==='PROMOTION');
+          const openDetail=(src)=>{{
+            if(!src)return;
+            let ov=document.getElementById('jeremie-detail-overlay');
+            if(!ov){{
+              ov=document.createElement('div'); ov.id='jeremie-detail-overlay';
+              ov.style.cssText='position:fixed;inset:0;z-index:99999;background:#000;overflow:auto;display:none;';
+              ov.innerHTML='<button aria-label="close" style="position:fixed;right:24px;top:18px;z-index:2;background:transparent;border:0;color:#fff;font-size:34px;line-height:1;cursor:pointer">×</button><img style="display:block;width:100%;height:auto;margin:0 auto" />';
+              ov.querySelector('button').addEventListener('click',()=>{{ov.style.display='none';document.body.style.overflow='';}});
+              ov.addEventListener('click',e=>{{if(e.target===ov){{ov.style.display='none';document.body.style.overflow='';}}}});
+              document.addEventListener('keydown',e=>{{if(e.key==='Escape'&&ov.style.display!=='none'){{ov.style.display='none';document.body.style.overflow='';}}}});
+              document.body.appendChild(ov);
+            }}
+            ov.querySelector('img').src=encodeURI(src); ov.style.display='block'; ov.scrollTop=0; document.body.style.overflow='hidden';
+          }};
+          const renderPromotion=()=>{{
+            const grid=getGrid(); if(!grid)return;
+            const existing=[...grid.querySelectorAll('.tile')];
+            if(!template&&existing[0])template=existing[0].cloneNode(true);
+            existing.forEach(el=>el.remove());
+            ITEMS.forEach(item=>{{
+              const tile=template?template.cloneNode(true):document.createElement('div');
+              tile.classList.add('tile'); tile.removeAttribute('style');
+              tile.dataset.category='promotion'; tile.dataset.cat='promotion'; tile.dataset.date=item.date; tile.dataset.name=item.name; tile.dataset.detail=item.detail;
+              let bg=tile.querySelector('.tile-bg'); if(!bg){{bg=document.createElement('div');bg.className='tile-bg';tile.appendChild(bg);}}
+              bg.style.backgroundImage=`url("${{encodeURI(item.card)}}")`; bg.style.backgroundSize='cover'; bg.style.backgroundPosition='center'; bg.style.backgroundRepeat='no-repeat';
+              const imgs=[...tile.querySelectorAll('img')];
+              if(imgs.length){{imgs[0].src=encodeURI(item.card);imgs[0].alt=item.name;imgs.slice(1).forEach(img=>img.remove());}}
+              tile.querySelectorAll('.tile-title,.tile-label,.tile-caption,.tile-meta,.title,.label').forEach(el=>el.remove());
+              [...tile.children].forEach(el=>{{if(el!==bg&&el.tagName!=='IMG'&&!el.classList.contains('tile-bg'))el.style.display='none';}});
+              tile.addEventListener('click',e=>{{e.preventDefault();e.stopPropagation();openDetail(item.detail);}});
+              grid.appendChild(tile);
+            }});
+            window.dispatchEvent(new Event('resize'));
+          }};
+          const init=()=>{{
+            const btn=getPromotionBtn(); if(!btn)return;
+            btn.addEventListener('click',()=>requestAnimationFrame(()=>requestAnimationFrame(renderPromotion)));
+            if(btn.classList.contains('active')) requestAnimationFrame(()=>requestAnimationFrame(renderPromotion));
+          }};
+          document.readyState==='loading'?document.addEventListener('DOMContentLoaded',init):init();
+          }})();</script>'''
+          if '</body>' not in s: raise SystemExit('index.html has no </body>')
+          s = s.replace('</body>', js + '\n</body>', 1)
+          p.write_text(s, encoding='utf-8')
+          print(f'Synced {len(items)} Promotion cards')
           PY
-      - name: Commit repaired page
+      - name: Commit generated Promotion data
         run: |
-          if git diff --quiet; then exit 0; fi
+          if git diff --quiet; then
+            echo "No changes needed"
+            exit 0
+          fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
-          git commit -m "Recover page and render all Promotion assets"
+          git commit -m "Sync Promotion cards from uploaded assets"
           git push
