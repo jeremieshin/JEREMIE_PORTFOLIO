@@ -570,6 +570,7 @@ const PROMOTION_PROJECTS = PROMOTION_FILES.map(f => ({
 }));
 
 const PROJECTS = [
+  ...PROMOTION_PROJECTS,
   { title: "2022 WHAT'S NEW",   category: "project",   image: null, from: "#101010", to: "#3a3a3a" },
   { title: "2021 우주Like 우주패스",   category: "guide",     image: null, from: "#e9e5d8", to: "#c7c2b3", dark: true },
   { title: "Fernway",      category: "ai",        image: null, from: "#c7c2b3", to: "#e9e5d8", dark: true },
@@ -584,8 +585,7 @@ const PROJECTS = [
   { title: "Zero Point",   category: "ai",        image: null, from: "#2733a8", to: "#4b5be0" },
   { title: "Nova Spark",   category: "project",   image: null, from: "#0a0a0a", to: "#1c1c1c" },
   { title: "Doorframe",    category: "guide",     image: null, from: "#f2f0e8", to: "#e2ddcf", dark: true },
-  { title: "Fieldcase",    category: "ai",        image: null, from: "#0a0a0a", to: "#2e2e2e" },
-  ...PROMOTION_PROJECTS
+  { title: "Fieldcase",    category: "ai",        image: null, from: "#0a0a0a", to: "#2e2e2e" }
 ];
 
 // ============================================================
