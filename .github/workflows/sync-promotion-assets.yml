@@ -15,97 +15,170 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Build Promotion cards only from uploaded files
+        with:
+          fetch-depth: 0
+
+      - name: Restore existing portfolio and apply exact Promotion filenames
         run: |
+          # index.html is currently empty on main. Restore the last known working card-view page first.
+          git show 24b60796083047c1f0219cf2fe7961e452b6431a:index.html > index.html
+
           python - <<'PY'
           from pathlib import Path
-          import re, json, unicodedata
+          import json, re, unicodedata
 
-          root = Path('.')
-          card_re = re.compile(r'^(\d{8})_Promotion_(.+)_card\.png$', re.I)
-          detail_re = re.compile(r'^(\d{8})_Promotion_(.+)_detail\.png$', re.I)
+          # Exact list supplied by the user. Order is newest first on the card view.
+          names = [
+            ('20251120', '블랙프라이데이'),
+            ('20250720', '찐템페'),
+            ('20250620', '스타일페스타'),
+            ('20240401', '펩시'),
+            ('20240325', '조지아'),
+            ('20240226', '희망쇼핑'),
+            ('20240104', '편스토랑리뉴얼'),
+            ('20231101', '십일쩔어'),
+            ('20230828', '패션위크'),
+            ('20230821', '피크닉테이블'),
+            ('20230711', '월간십일절7월'),
+            ('20230629', '비보티비'),
+            ('20230518', '코카콜라'),
+            ('20230411', '월간십일절4월'),
+            ('20230304', '오픽'),
+            ('20220527', '패셔니스타'),
+            ('20220411', '월간십일절4월'),
+            ('20220211', '월간십일절2월'),
+            ('20211211', '월간십일절12월'),
+            ('20210911', '월간십일절9월'),
+            ('20210125', '마음으로함께설날'),
+            ('20180801', '버거킹'),
+            ('20180701', '해피바스'),
+            ('20170328', '패션위크'),
+            ('20170104', '해피발렌타인'),
+          ]
 
-          cards = {}
-          details = {}
-          for f in root.glob('*.png'):
-            normalized = unicodedata.normalize('NFC', f.name)
-            m = card_re.match(normalized)
-            if m:
-              cards[(m.group(1), m.group(2))] = f.name
-              continue
-            m = detail_re.match(normalized)
-            if m:
-              details[(m.group(1), m.group(2))] = f.name
+          # Git stores these Korean filenames in decomposed Unicode on this repo.
+          # Match by NFC, but keep the exact on-disk filename for the URL so GitHub Pages resolves it.
+          actual = {}
+          for f in Path('.').glob('*.png'):
+            actual[unicodedata.normalize('NFC', f.name)] = f.name
 
           items = []
-          for key, card in cards.items():
-            date, name = key
-            items.append({'date': date, 'name': name, 'card': card, 'detail': details.get(key, '')})
-          items.sort(key=lambda x: (x['date'], x['name']), reverse=True)
+          missing = []
+          for date, title in names:
+            card_nfc = f'{date}_Promotion_{title}_card.png'
+            detail_nfc = f'{date}_Promotion_{title}_detail.png'
+            card = actual.get(card_nfc)
+            detail = actual.get(detail_nfc)
+            if not card or not detail:
+              missing.append((card_nfc if not card else '', detail_nfc if not detail else ''))
+              continue
+            items.append({'date': date, 'name': title, 'card': card, 'detail': detail})
+
+          if missing:
+            raise SystemExit('Missing exact Promotion files: ' + repr(missing))
+          if len(items) != 25:
+            raise SystemExit(f'Expected 25 Promotion items, got {len(items)}')
 
           p = Path('index.html')
           s = p.read_text(encoding='utf-8')
-          s = re.sub(r'\n?<script id="jeremie-promotion-assets">.*?</script>\n?', '\n', s, flags=re.S)
+
+          # Remove only previous Promotion override scripts; keep the existing portfolio structure/styles.
+          for sid in ('jeremie-promotion-only-fix', 'jeremie-promotion-assets', 'jeremie-promotion-final'):
+            s = re.sub(r'\n?<script id="' + re.escape(sid) + r'">.*?</script>\n?', '\n', s, flags=re.S)
+
           payload = json.dumps(items, ensure_ascii=False)
           js = f'''<script id="jeremie-promotion-assets">(()=>{{
           const ITEMS={payload};
           let template=null;
-          const getGrid=()=>document.querySelector('.work-grid,.grid');
-          const getPromotionBtn=()=>[...document.querySelectorAll('.filter-btn')].find(b=>b.textContent.trim().toUpperCase()==='PROMOTION');
-          const openDetail=(src)=>{{
-            if(!src)return;
-            let ov=document.getElementById('jeremie-detail-overlay');
-            if(!ov){{
-              ov=document.createElement('div'); ov.id='jeremie-detail-overlay';
-              ov.style.cssText='position:fixed;inset:0;z-index:99999;background:#000;overflow:auto;display:none;';
-              ov.innerHTML='<button aria-label="close" style="position:fixed;right:24px;top:18px;z-index:2;background:transparent;border:0;color:#fff;font-size:34px;line-height:1;cursor:pointer">×</button><img style="display:block;width:100%;height:auto;margin:0 auto" />';
-              ov.querySelector('button').addEventListener('click',()=>{{ov.style.display='none';document.body.style.overflow='';}});
-              ov.addEventListener('click',e=>{{if(e.target===ov){{ov.style.display='none';document.body.style.overflow='';}}}});
-              document.addEventListener('keydown',e=>{{if(e.key==='Escape'&&ov.style.display!=='none'){{ov.style.display='none';document.body.style.overflow='';}}}});
-              document.body.appendChild(ov);
-            }}
-            ov.querySelector('img').src=encodeURI(src); ov.style.display='block'; ov.scrollTop=0; document.body.style.overflow='hidden';
+          const grid=()=>document.querySelector('.work-grid,.grid');
+          const buttons=()=>[...document.querySelectorAll('.filter-btn')];
+          const promoBtn=()=>buttons().find(b=>((b.dataset.filter||b.textContent||'').trim().toLowerCase()==='promotion'));
+
+          const closeDetail=()=>{{
+            const ov=document.getElementById('workDetailOverlay');
+            if(ov) ov.classList.remove('open');
+            document.body.classList.remove('detail-open');
+            document.documentElement.classList.remove('detail-open');
           }};
-          const renderPromotion=()=>{{
-            const grid=getGrid(); if(!grid)return;
-            const existing=[...grid.querySelectorAll('.tile')];
-            if(!template&&existing[0])template=existing[0].cloneNode(true);
-            existing.forEach(el=>el.remove());
-            ITEMS.forEach(item=>{{
-              const tile=template?template.cloneNode(true):document.createElement('div');
-              tile.classList.add('tile'); tile.removeAttribute('style');
-              tile.dataset.category='promotion'; tile.dataset.cat='promotion'; tile.dataset.date=item.date; tile.dataset.name=item.name; tile.dataset.detail=item.detail;
-              let bg=tile.querySelector('.tile-bg'); if(!bg){{bg=document.createElement('div');bg.className='tile-bg';tile.appendChild(bg);}}
-              bg.style.backgroundImage=`url("${{encodeURI(item.card)}}")`; bg.style.backgroundSize='cover'; bg.style.backgroundPosition='center'; bg.style.backgroundRepeat='no-repeat';
-              const imgs=[...tile.querySelectorAll('img')];
-              if(imgs.length){{imgs[0].src=encodeURI(item.card);imgs[0].alt=item.name;imgs.slice(1).forEach(img=>img.remove());}}
-              tile.querySelectorAll('.tile-title,.tile-label,.tile-caption,.tile-meta,.title,.label').forEach(el=>el.remove());
-              [...tile.children].forEach(el=>{{if(el!==bg&&el.tagName!=='IMG'&&!el.classList.contains('tile-bg'))el.style.display='none';}});
-              tile.addEventListener('click',e=>{{e.preventDefault();e.stopPropagation();openDetail(item.detail);}});
-              grid.appendChild(tile);
+
+          const openDetail=(src)=>{{
+            let ov=document.getElementById('workDetailOverlay');
+            if(!ov){{
+              ov=document.createElement('div');
+              ov.id='workDetailOverlay';
+              ov.className='work-detail-overlay';
+              ov.innerHTML='<button class="work-detail-close" type="button"><span></span><span></span></button><div class="work-detail-stage"><img class="work-detail-image" alt="Project detail"></div>';
+              document.body.appendChild(ov);
+              ov.querySelector('.work-detail-close').addEventListener('click',closeDetail);
+            }}
+            const img=ov.querySelector('.work-detail-image');
+            if(img) img.src=src;
+            document.body.classList.add('detail-open');
+            document.documentElement.classList.add('detail-open');
+            ov.classList.add('open');
+            ov.scrollTop=0;
+          }};
+
+          const render=()=>{{
+            const g=grid(); if(!g) return;
+            const current=[...g.querySelectorAll('.tile')];
+            if(!template && current[0]) template=current[0].cloneNode(true);
+            if(!template) return;
+            g.innerHTML='';
+
+            ITEMS.forEach((item,i)=>{{
+              const tile=template.cloneNode(true);
+              tile.removeAttribute('style');
+              tile.dataset.cat='promotion';
+              tile.dataset.category='promotion';
+              tile.dataset.promotionIndex=String(i);
+              tile.dataset.detail=item.detail;
+
+              const bg=tile.querySelector('.tile-bg');
+              if(bg){{
+                bg.style.backgroundImage=`url("${{item.card}}")`;
+                bg.style.backgroundSize='cover';
+                bg.style.backgroundPosition='center';
+                bg.style.backgroundRepeat='no-repeat';
+              }}
+              const img=tile.querySelector('img');
+              if(img){{ img.src=item.card; img.alt=item.name; }}
+              tile.querySelectorAll('.tile-title,.tile-label,.tile-caption,.tile-meta,.title,.label').forEach(x=>x.style.display='none');
+              tile.onclick=(e)=>{{ e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation(); openDetail(item.detail); }};
+              g.appendChild(tile);
             }});
             window.dispatchEvent(new Event('resize'));
           }};
+
           const init=()=>{{
-            const btn=getPromotionBtn(); if(!btn)return;
-            btn.addEventListener('click',()=>requestAnimationFrame(()=>requestAnimationFrame(renderPromotion)));
-            if(btn.classList.contains('active')) requestAnimationFrame(()=>requestAnimationFrame(renderPromotion));
+            const pb=promoBtn();
+            if(pb){{
+              pb.addEventListener('click',()=>requestAnimationFrame(()=>requestAnimationFrame(render)),true);
+              buttons().forEach(b=>b.classList.remove('active'));
+              pb.classList.add('active');
+            }}
+            render();
           }};
           document.readyState==='loading'?document.addEventListener('DOMContentLoaded',init):init();
           }})();</script>'''
-          if '</body>' not in s: raise SystemExit('index.html has no </body>')
+
+          if '</body>' not in s:
+            raise SystemExit('Restored index.html has no </body>')
           s = s.replace('</body>', js + '\n</body>', 1)
           p.write_text(s, encoding='utf-8')
-          print(f'Synced {len(items)} Promotion cards')
+          print('Applied exact Promotion list:', len(items))
+          for item in items:
+            print(item['card'], '->', item['detail'])
           PY
-      - name: Commit generated Promotion data
+
+      - name: Commit exact Promotion mapping
         run: |
-          if git diff --quiet; then
-            echo "No changes needed"
-            exit 0
-          fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
-          git commit -m "Sync Promotion cards from uploaded assets"
+          if git diff --cached --quiet; then
+            echo "No changes needed"
+            exit 0
+          fi
+          git commit -m "Apply exact Promotion card filename mapping"
           git push
