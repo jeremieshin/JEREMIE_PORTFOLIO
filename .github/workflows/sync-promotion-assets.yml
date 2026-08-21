@@ -25,7 +25,7 @@ jobs:
 
           p = Path('index.html')
           if (not p.exists()) or p.stat().st_size < 1000:
-              good = subprocess.check_output(['git','show','cf626515a0475561a94b45c28aa12b633de3351d:index.html'])
+              good = subprocess.check_output(['git','show','f28cd672c7f854c7fbe3858ccff2da981d062acd:index.html'])
               p.write_bytes(good)
 
           s = p.read_text(encoding='utf-8')
@@ -50,11 +50,9 @@ jobs:
           items.sort(key=lambda x:(x['date'],x['name']), reverse=True)
           payload=json.dumps(items,ensure_ascii=False)
 
-          # Remove obsolete Promotion patches that hard-code seven placeholder cards.
           for sid in ['jeremie-promotion-only-fix','jeremie-promotion-assets','jeremie-promotion-final']:
               s=re.sub(r'\n?<script id="'+re.escape(sid)+r'">.*?</script>\n?','\n',s,flags=re.S)
 
-          # Use the uploaded main visual directly.
           s=re.sub(r'<img([^>]*class="[^"]*hero-title-img[^"]*"[^>]*)src="[^"]*"([^>]*)>',
                    lambda m:'<img'+m.group(1)+'src="260821_main.png"'+m.group(2)+'>',s,count=1,flags=re.I)
 
@@ -63,9 +61,9 @@ jobs:
 .hero{background:#000000 !important;}
 .hero-title-img{object-fit:contain !important;object-position:center center !important;scale:.8 !important;transform-origin:center center !important;}
 .work-grid,.grid{background:inherit;}
-.tile{border-radius:0 !important;overflow:hidden !important;box-shadow:none !important;cursor:pointer;}
-.tile .tile-bg{position:absolute !important;inset:0 !important;background-size:cover !important;background-position:center !important;background-repeat:no-repeat !important;border-radius:0 !important;transition:inset .2s cubic-bezier(.2,.7,.2,1),transform .2s cubic-bezier(.2,.7,.2,1) !important;}
-.tile:hover .tile-bg{inset:14px !important;transform:scale(1.035) !important;}
+.tile{position:relative !important;border-radius:0 !important;overflow:hidden !important;box-shadow:none !important;cursor:pointer;}
+.tile .jeremie-card-img{display:block !important;width:100% !important;height:auto !important;opacity:1 !important;visibility:visible !important;object-fit:cover !important;transition:transform .2s cubic-bezier(.2,.7,.2,1),padding .2s cubic-bezier(.2,.7,.2,1) !important;}
+.tile:hover .jeremie-card-img{padding:14px !important;transform:scale(1.035) !important;}
 </style>
 '''
           s=re.sub(r'\n?<style id="jeremie-promotion-final-style">.*?</style>\n?','\n',s,flags=re.S)
@@ -77,7 +75,7 @@ let rendered=false;
 const grid=()=>document.querySelector('.work-grid,.grid');
 const promo=()=>[...document.querySelectorAll('.filter-btn')].find(b=>b.textContent.trim().toUpperCase()==='PROMOTION');
 const openDetail=src=>{{if(!src)return;let o=document.getElementById('jeremie-detail-overlay');if(!o){{o=document.createElement('div');o.id='jeremie-detail-overlay';o.style.cssText='position:fixed;inset:0;z-index:99999;background:#000;overflow:auto;display:none';o.innerHTML='<button type="button" aria-label="close" style="position:fixed;right:24px;top:18px;z-index:2;border:0;background:transparent;color:#fff;font-size:36px;cursor:pointer">×</button><img style="display:block;width:100%;height:auto;margin:0 auto">';o.querySelector('button').onclick=()=>{{o.style.display='none';document.body.style.overflow=''}};document.body.appendChild(o)}}o.querySelector('img').src=encodeURI(src);o.style.display='block';o.scrollTop=0;document.body.style.overflow='hidden'}};
-const render=()=>{{const g=grid();if(!g)return;g.innerHTML='';ITEMS.forEach(item=>{{const t=document.createElement('div');t.className='tile';t.dataset.cat='promotion';t.dataset.category='promotion';const bg=document.createElement('div');bg.className='tile-bg';bg.style.backgroundImage=`url("${{encodeURI(item.card)}}")`;t.appendChild(bg);t.onclick=e=>{{e.preventDefault();openDetail(item.detail)}};g.appendChild(t)}});rendered=true;window.dispatchEvent(new Event('resize'))}};
+const render=()=>{{const g=grid();if(!g)return;g.innerHTML='';ITEMS.forEach(item=>{{const t=document.createElement('div');t.className='tile';t.dataset.cat='promotion';t.dataset.category='promotion';const img=document.createElement('img');img.className='jeremie-card-img';img.src=encodeURI(item.card);img.alt=item.name;img.loading='eager';t.appendChild(img);t.onclick=e=>{{e.preventDefault();openDetail(item.detail)}};g.appendChild(t)}});rendered=true;window.dispatchEvent(new Event('resize'))}};
 const init=()=>{{const b=promo();if(b){{b.addEventListener('click',()=>requestAnimationFrame(render));if(b.classList.contains('active'))render();}}else render();setTimeout(()=>{{if(!rendered)render()}},250)}};
 document.readyState==='loading'?document.addEventListener('DOMContentLoaded',init):init();
 }})();</script>'''
