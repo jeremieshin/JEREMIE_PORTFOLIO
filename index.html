@@ -479,60 +479,113 @@
   padding-left: var(--about-text-left, 6vw); /* ABOUT 텍스트 "A" 시작 위치와 JS로 실시간 동기화됨 */
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Pretendard", sans-serif;
 }
-.about-history-group {
+.work-exp-title {
+  font-size: clamp(28px, 2.6vw, 40px);
+  font-weight: 800;
+  color: var(--ink-on-dark);
+  margin: 0 0 56px;
+  letter-spacing: -0.01em;
+}
+.work-exp-row {
   display: flex;
   gap: 64px;
-  padding: 44px 0;
+  padding: 32px 0;
   border-bottom: 1px solid var(--line-dark);
+  position: relative;
 }
-.about-history-group:last-child {
+.work-exp-row:last-child {
   border-bottom: none;
 }
-.about-history-group:first-child {
+.work-exp-row:first-child {
   padding-top: 0;
 }
-.about-history-year {
-  flex: 0 0 210px;
-  color: var(--ink-on-dark-dim);
-  font-size: 19px;
-  font-weight: 600;
-  letter-spacing: 0.01em;
-  padding-top: 2px;
+.work-exp-row.new-company {
+  border-top: 1px solid var(--line-dark);
+  margin-top: 8px;
+  padding-top: 40px;
 }
-.about-history-items {
+.work-exp-row.new-company:first-child {
+  border-top: none;
+  margin-top: 0;
+}
+.work-exp-left {
+  flex: 0 0 210px;
+}
+.work-exp-company {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--ink-on-dark);
+  letter-spacing: -0.01em;
+}
+.work-exp-role {
+  font-size: 14px;
+  color: var(--ink-on-dark-dim);
+  margin-top: 4px;
+}
+.work-exp-year-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 18px;
+}
+.work-exp-row.new-company .work-exp-year-wrap {
+  margin-top: 22px;
+}
+.work-exp-year {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--ink-on-dark-dim);
+}
+.work-exp-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--ink-on-dark-dim);
+  flex-shrink: 0;
+}
+.work-exp-content {
   flex: 1;
+  min-width: 0;
+}
+.work-exp-block + .work-exp-block {
+  margin-top: 28px;
+}
+.work-exp-block-title {
+  font-weight: 700;
+  font-size: 19px;
+  color: var(--ink-on-dark);
+  margin: 0 0 14px;
+  letter-spacing: -0.005em;
+}
+.work-exp-bullets {
   display: flex;
   flex-direction: column;
-  gap: 24px;
-}
-.about-history-item {
-  display: flex;
   gap: 12px;
-  color: var(--ink-on-dark-dim);
-  font-size: 18px;
-  font-weight: 400;
-  line-height: 1.5;
-  transition: color 0.25s ease, font-weight 0.25s ease;
-  cursor: default;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
-.about-history-item:hover,
-.about-history-item:hover strong {
-  color: var(--ink-on-dark);
-  font-weight: 600;
-}
-.about-history-item::before {
-  content: "-";
+.work-exp-bullet {
+  display: flex;
+  gap: 10px;
   color: var(--ink-on-dark-dim);
+  font-size: 16px;
+  line-height: 1.55;
+}
+.work-exp-bullet::before {
+  content: "•";
   flex-shrink: 0;
-  transition: color 0.25s ease;
+  color: var(--ink-on-dark-dim);
 }
-.about-history-item:hover::before {
+.work-exp-bullet strong {
   color: var(--ink-on-dark);
+  font-weight: 700;
 }
-.about-history-item strong {
-  color: inherit;
-  font-weight: inherit;
-  transition: color 0.25s ease, font-weight 0.25s ease;
+.work-exp-bullet .we-detail {
+  display: block;
+  margin-top: 4px;
+  color: var(--ink-on-dark-dim);
+  white-space: pre-line;
 }
 </style>
 </head>
@@ -631,32 +684,8 @@
   </div>
 
   <section id="about-history">
-    <!-- ⚠️ 임시 내용 — 실제 연혁/수상 내용으로 교체 예정 -->
-    <div class="about-history-group">
-      <div class="about-history-year">2021</div>
-      <div class="about-history-items">
-        <div class="about-history-item"><span><strong>IDEA Design Award:</strong> Krafton Brand eXperience Design</span></div>
-        <div class="about-history-item"><span><strong>Awwwards:</strong> Neker Brand Website / Deeponde Brand Website</span></div>
-      </div>
-    </div>
-    <div class="about-history-group">
-      <div class="about-history-year">2020</div>
-      <div class="about-history-items">
-        <div class="about-history-item"><span><strong>Red Dot Design Award:</strong> PlusX Official Website</span></div>
-        <div class="about-history-item"><span><strong>iF Design Award:</strong> PlusX Internal Branding</span></div>
-        <div class="about-history-item"><span><strong>GDA:</strong> emart App UX/UI Design / G9 App UX/UI Design</span></div>
-        <div class="about-history-item"><span><strong>Awwwards:</strong> PusX Official Website</span></div>
-        <div class="about-history-item"><span><strong>CSS Design Award:</strong> PusX Official Website</span></div>
-      </div>
-    </div>
-    <div class="about-history-group">
-      <div class="about-history-year">2019</div>
-      <div class="about-history-items">
-        <div class="about-history-item"><span><strong>iF Design Award:</strong> YG Select App Design</span></div>
-        <div class="about-history-item"><span><strong>& Award:</strong> KAKAOPAGE Brand Website UX/UI Design</span></div>
-        <div class="about-history-item"><span><strong>GDA:</strong> SHINSEGAE Dept. Store App / S.I.VILLAGE UI / L.POINT App</span></div>
-      </div>
-    </div>
+    <h2 class="work-exp-title">Work Experience</h2>
+    <div id="workExpList"></div>
   </section>
 </section>
 
@@ -967,6 +996,105 @@ window.addEventListener('load',applyHeroScale,{once:true});
 
   // 무한 루프처럼 자연스럽게 이어지려면 목록을 2번 반복해야 함
   [...PHOTO_STRIP_FILES, ...PHOTO_STRIP_FILES].forEach(src => track.appendChild(buildItem(src)));
+})();
+</script>
+<script>
+// ============================================================
+// Work Experience 타임라인 — 실제 경력 데이터
+// 각 row는: company/role(새 회사 시작할 때만), year(새 구간 시작할 때만),
+// title(선택), bullets(문자열 또는 {bold, detail} 형태) 로 구성
+// ============================================================
+(function(){
+  const WORK_EXPERIENCE = [
+    {
+      company: "11ST", role: "시니어 디자이너", year: "2026", newCompany: true,
+      title: "그랜드 십일절, 월간 십일절, 제휴, 세일즈 프로모션 디자인",
+      bullets: [
+        "그랜드 십일절, 월간 십일절 프로모션",
+        "전사, 명절, 빅시즌, 패션, 뷰티 마케팅 프로모션",
+        "LG, 삼성, 애플, 구글 등 대형제휴, 입점 브랜드사 전문관 몰, 세일즈 프로모션"
+      ]
+    },
+    {
+      title: "프로모션 템플릿, 월간 운영, 주요 배너, 스타일 가이드",
+      bullets: [
+        "대형 제휴, 빅시즌 프로모션, 패션/뷰티 프로모션, 제휴사 전문관 디자인 템플릿 가이드",
+        "모바일, PC 홈 주요 전시 구좌 배너 가이드",
+        "운영 프로모션, 주요상품, 아이콘, 버튼, 팝업등 스타일 가이드 제작"
+      ]
+    },
+    {
+      title: "디자인 트렌드, AI 디자인 활용 및 디자인 전략 수립",
+      bullets: [
+        "미드저니, ChatGPT, Adobe Firefly등 AI 자동화 시스템 구축",
+        "새로운 디자인 전략과 Ai 툴 활용으로 인한 프로모션 자동화 구축 프로젝트",
+        "AI 비주얼 디자인 11번가 디자인 에셋 제작, 프롬프트 지침서로 일관된 디자인의 생성형 시스템 구축"
+      ]
+    },
+    {
+      company: "PIXDINE", role: "대리 / 프로젝트 리더", year: "2014", newCompany: true,
+      title: "브랜드사 사이트 제안, 구축 월간 운영/이벤트 디자인",
+      bullets: [
+        { bold: "리뉴얼 구축 프로젝트 / 운영 가이드 제작", detail: "법무법인 태평양 / PARADISE HOTEL BUSAN / 동부화재 DOMA Campaign 구축\n올레 KT 메인배너 및 이벤트 운영 가이드 제작" },
+        { bold: "디자인 PT, 구축 및 리뉴얼 제안", detail: "한화(주) / 한라 비발디 / 신한증권 / Louis quatorze / Hera / MARVEL KOREA / 디즈니 구축 및 리뉴얼 제안" }
+      ]
+    },
+    {
+      title: "구축 Project 리더, 디자인 가이드 제작 및 관리",
+      bullets: [
+        "디자인 전략 및 제안 PT 진행, 구축 Project 리딩, 디자인 제작, 검수 및 관리",
+        "브랜드사 디자인 가이드 제작 및 운영관리, 사원 / 주임 급 운영 디자인 검수 및 관리"
+      ]
+    },
+    {
+      company: "TOY INTERACTIVE", role: "주임 / 주니어 디자이너", year: "2012", newCompany: true,
+      title: "기업 홈페이지 제안, 구축",
+      bullets: [
+        { bold: "리뉴얼 구축 프로젝트 / 운영 가이드 제작", detail: "LG Monitor TV / LG network monitor / Korando C / Compassion Korea / KT Olleh e-book / KT lifezaky / LOTS / Prospecs R / 롯데관 구축, T Station 리뉴얼 제안" }
+      ]
+    },
+    {
+      year: "2010",
+      bullets: [
+        { bold: "브랜드사 월간 운영/이벤트 디자인", detail: "Hillstate 월간 Wallpaper, event 디자인 운영, KT Olleh 배너 운영, 이벤트, 서브페이지 디자인" }
+      ]
+    }
+  ];
+
+  function escapeHTML(s) {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function renderBullet(b) {
+    if (typeof b === 'string') {
+      return `<li class="work-exp-bullet">${escapeHTML(b)}</li>`;
+    }
+    const detailHtml = b.detail ? `<span class="we-detail">${escapeHTML(b.detail)}</span>` : '';
+    return `<li class="work-exp-bullet"><span><strong>${escapeHTML(b.bold)}</strong>${detailHtml}</span></li>`;
+  }
+
+  function render() {
+    const root = document.getElementById('workExpList');
+    if (!root) return;
+    const html = WORK_EXPERIENCE.map(row => {
+      const leftCompany = row.company
+        ? `<div class="work-exp-company">${escapeHTML(row.company)}</div><div class="work-exp-role">${escapeHTML(row.role || '')}</div>`
+        : '';
+      const leftYear = row.year
+        ? `<div class="work-exp-year-wrap"><span class="work-exp-dot"></span><span class="work-exp-year">${escapeHTML(row.year)}</span></div>`
+        : '';
+      const titleHtml = row.title ? `<div class="work-exp-block-title">${escapeHTML(row.title)}</div>` : '';
+      const bulletsHtml = row.bullets ? `<ul class="work-exp-bullets">${row.bullets.map(renderBullet).join('')}</ul>` : '';
+      const rowClass = row.newCompany ? 'work-exp-row new-company' : 'work-exp-row';
+      return `<div class="${rowClass}">
+        <div class="work-exp-left">${leftCompany}${leftYear}</div>
+        <div class="work-exp-content"><div class="work-exp-block">${titleHtml}${bulletsHtml}</div></div>
+      </div>`;
+    }).join('');
+    root.innerHTML = html;
+  }
+
+  render();
 })();
 </script>
 <script>
