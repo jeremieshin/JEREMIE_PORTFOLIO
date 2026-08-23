@@ -488,7 +488,7 @@
 }
 .work-exp-row {
   display: flex;
-  gap: 64px;
+  gap: 40px;
   padding: 32px 0;
   border-bottom: 1px solid var(--line-dark);
   position: relative;
@@ -508,28 +508,14 @@
   border-top: none;
   margin-top: 0;
 }
-.work-exp-left {
-  flex: 0 0 210px;
-}
-.work-exp-company {
-  font-size: 22px;
-  font-weight: 800;
-  color: var(--ink-on-dark);
-  letter-spacing: -0.01em;
-}
-.work-exp-role {
-  font-size: 14px;
-  color: var(--ink-on-dark-dim);
-  margin-top: 4px;
+/* 1열: 연도 + 점 */
+.work-exp-col-year {
+  flex: 0 0 100px;
 }
 .work-exp-year-wrap {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-top: 18px;
-}
-.work-exp-row.new-company .work-exp-year-wrap {
-  margin-top: 22px;
 }
 .work-exp-year {
   font-size: 17px;
@@ -543,6 +529,22 @@
   background: var(--ink-on-dark-dim);
   flex-shrink: 0;
 }
+/* 2열: 회사명 + 직함 */
+.work-exp-col-company {
+  flex: 0 0 190px;
+}
+.work-exp-company {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--ink-on-dark);
+  letter-spacing: -0.01em;
+}
+.work-exp-role {
+  font-size: 13px;
+  color: var(--ink-on-dark-dim);
+  margin-top: 4px;
+}
+/* 3열: 제목 + 불릿 내용 */
 .work-exp-content {
   flex: 1;
   min-width: 0;
@@ -1077,17 +1079,18 @@ window.addEventListener('load',applyHeroScale,{once:true});
     const root = document.getElementById('workExpList');
     if (!root) return;
     const html = WORK_EXPERIENCE.map(row => {
-      const leftCompany = row.company
-        ? `<div class="work-exp-company">${escapeHTML(row.company)}</div><div class="work-exp-role">${escapeHTML(row.role || '')}</div>`
-        : '';
-      const leftYear = row.year
+      const yearCol = row.year
         ? `<div class="work-exp-year-wrap"><span class="work-exp-dot"></span><span class="work-exp-year">${escapeHTML(row.year)}</span></div>`
+        : '';
+      const companyCol = row.company
+        ? `<div class="work-exp-company">${escapeHTML(row.company)}</div><div class="work-exp-role">${escapeHTML(row.role || '')}</div>`
         : '';
       const titleHtml = row.title ? `<div class="work-exp-block-title">${escapeHTML(row.title)}</div>` : '';
       const bulletsHtml = row.bullets ? `<ul class="work-exp-bullets">${row.bullets.map(renderBullet).join('')}</ul>` : '';
       const rowClass = row.newCompany ? 'work-exp-row new-company' : 'work-exp-row';
       return `<div class="${rowClass}">
-        <div class="work-exp-left">${leftCompany}${leftYear}</div>
+        <div class="work-exp-col-year">${yearCol}</div>
+        <div class="work-exp-col-company">${companyCol}</div>
         <div class="work-exp-content"><div class="work-exp-block">${titleHtml}${bulletsHtml}</div></div>
       </div>`;
     }).join('');
