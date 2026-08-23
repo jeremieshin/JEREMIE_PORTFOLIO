@@ -22,6 +22,7 @@
     --red:#e8432c;
     --line-dark: rgba(243,241,234,0.14);
     --line-light: rgba(20,20,20,0.13);
+    --line-soft: rgba(243,241,234,0.06);
     --ease: cubic-bezier(.16,.8,.24,1);
   }
   body.inverted{
@@ -34,6 +35,7 @@
     --ink-on-light-dim: rgba(243,241,234,0.5);
     --line-dark: rgba(20,20,20,0.13);
     --line-light: rgba(243,241,234,0.14);
+    --line-soft: rgba(20,20,20,0.06);
   }
   *{ box-sizing:border-box; margin:0; padding:0; }
   html{ scroll-behavior:smooth; }
@@ -490,7 +492,8 @@
   display: flex;
   gap: 64px;
   padding: 44px 0;
-  border-bottom: 1px solid var(--line-dark);
+  border-bottom: 1px solid var(--line-soft);
+  width: var(--about-text-width, 100%); /* ABOUT 텍스트 폭과 동일 — 라인이 "T" 끝에서 정확히 끊김 */
 }
 .about-history-group:last-child {
   border-bottom: none;
@@ -1066,8 +1069,10 @@ window.addEventListener('load',applyHeroScale,{once:true});
     const totalWidth = charWidths.reduce((a, b) => a + b, 0) + letterSpacing * (chars.length - 1);
     let cursorX = W / 2 - totalWidth / 2;
 
-    // "A" 시작 위치를 CSS 변수로 공개 — #about-history가 같은 좌표에서 시작하도록 동기화
+    // "A" 시작 위치와 텍스트 전체 폭을 CSS 변수로 공개
+    // — #about-history가 같은 좌표에서 시작하고, 구분선이 "T" 끝에서 정확히 끊기도록 동기화
     document.documentElement.style.setProperty('--about-text-left', cursorX + 'px');
+    document.documentElement.style.setProperty('--about-text-width', totalWidth + 'px');
 
     chars.forEach((ch, i) => {
       octx.fillText(ch, cursorX, baselineY);
