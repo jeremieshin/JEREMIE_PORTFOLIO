@@ -414,6 +414,49 @@
 }
 
 /* ============================================================
+   WORK와 ABOUT 사이 — 자동으로 흘러가는 가로 사진 슬라이더
+   (photo-strip- 접두사로 스코프)
+   사진은 아래 고정 높이(PHOTO_STRIP_HEIGHT)에 맞춰 올려주시면
+   가로 비율은 원본 그대로, 자르지 않고 표시됩니다.
+   ============================================================ */
+#photo-strip {
+  background: var(--dark);
+  padding: 0;
+}
+.photo-strip-wrap {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  padding: 40px 0;
+  -webkit-mask-image: linear-gradient(to right, transparent 0, #000 80px, #000 calc(100% - 80px), transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0, #000 80px, #000 calc(100% - 80px), transparent 100%);
+}
+.photo-strip-track {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: max-content;
+  animation: photoStripScroll 32s linear infinite;
+}
+.photo-strip-wrap:hover .photo-strip-track {
+  animation-play-state: paused;
+}
+.photo-strip-item {
+  flex: 0 0 auto;
+  height: 220px; /* ← 사진을 이 높이에 맞춰 올려주세요. 폭은 원본 비율 그대로 자동 계산됩니다 */
+}
+.photo-strip-item img {
+  height: 100%;
+  width: auto;
+  display: block;
+  border-radius: 4px;
+}
+@keyframes photoStripScroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+/* ============================================================
    ABOUT 섹션 — 도트 파티클 인터랙션 + 연혁 리스트
    (about- 접두사로 스코프해서 기존 스타일과 충돌 없음)
    ============================================================ */
@@ -573,6 +616,14 @@
   </div>
 </section>
 
+<section id="photo-strip">
+  <div class="photo-strip-wrap">
+    <div class="photo-strip-track" id="photoStripTrack">
+      <!-- 사진은 JS의 PHOTO_STRIP_FILES 배열을 채우면 자동으로 여기 채워집니다 -->
+    </div>
+  </div>
+</section>
+
 <section id="about" class="contact">
   <div id="about-hero">
     <canvas id="about-canvas"></canvas>
@@ -724,6 +775,7 @@ const GUIDE_PROJECTS = GUIDE_FILES.map(f => ({
 
 // Ai 카테고리 실제 업로드 파일
 const AI_FILES = [
+  { prefix: "20260301_ai_3dicon", title: "2026 3D Icon", inProgress: true },
   { prefix: "20251211_ai_shotsPJ", title: "2025 Shots PJ" }
 ];
 const AI_PROJECTS = AI_FILES.map(f => ({
@@ -886,6 +938,36 @@ const schedule=()=>requestAnimationFrame(()=>requestAnimationFrame(applyHeroScal
 document.readyState==='loading'?document.addEventListener('DOMContentLoaded',schedule):schedule();
 window.addEventListener('load',applyHeroScale,{once:true});
 })();</script>
+<script>
+// ============================================================
+// WORK-ABOUT 사이 가로 사진 슬라이더
+// PHOTO_STRIP_FILES에 파일명만 순서대로 넣으면 자동으로 채워짐
+// (지금은 비어있어서 화면에 아무것도 안 보임 — 사진 파일명 확정되면 채울 예정)
+// ============================================================
+(function(){
+  const PHOTO_STRIP_FILES = [
+    // 예: "20260301_photo_01.jpg", "20260301_photo_02.jpg", ...
+  ];
+
+  const track = document.getElementById('photoStripTrack');
+  if (!track || PHOTO_STRIP_FILES.length === 0) return;
+
+  function buildItem(src) {
+    const div = document.createElement('div');
+    div.className = 'photo-strip-item';
+    const img = document.createElement('img');
+    // 다른 이미지들과 동일한 방식: 맥에서 업로드된 한글 파일명 대응 (NFD 정규화 후 인코딩)
+    img.src = encodeURIComponent(src.normalize('NFD'));
+    img.alt = '';
+    img.loading = 'lazy';
+    div.appendChild(img);
+    return div;
+  }
+
+  // 무한 루프처럼 자연스럽게 이어지려면 목록을 2번 반복해야 함
+  [...PHOTO_STRIP_FILES, ...PHOTO_STRIP_FILES].forEach(src => track.appendChild(buildItem(src)));
+})();
+</script>
 <script>
 // ============================================================
 // ABOUT 섹션 — 도트 파티클 텍스트 인터랙션
