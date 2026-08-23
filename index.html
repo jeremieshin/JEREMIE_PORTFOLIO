@@ -207,9 +207,12 @@
     font-family:'Pretendard Variable'; font-weight:800;
     font-size:clamp(40.5px, 6.48vw, 108px); line-height:1.04; letter-spacing:-0.01em;
     display:flex; align-items:center; gap:16px; color:var(--ink-on-light);
-    transition:color .3s var(--ease);
+    transition:color .3s var(--ease), opacity .3s var(--ease);
   }
   .menu-nav a:hover{ color:var(--red); }
+  /* 메뉴 중 하나에 마우스를 올리면 나머지는 흐려지고, 올린 것만 진하게 남음 */
+  .menu-nav:hover a{ opacity:.35; }
+  .menu-nav a:hover{ opacity:1; }
   .menu-nav a .badge{
     background:var(--red); color:#fff; font-family:'Pretendard Variable'; font-weight:800; font-size:14px;
     border-radius:20px; padding:3px 12px;
