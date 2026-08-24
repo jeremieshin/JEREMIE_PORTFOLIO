@@ -464,8 +464,13 @@
   width: 100%;
   overflow: hidden;
   padding: 40px 0;
+  cursor: grab;
+  touch-action: pan-y;
   -webkit-mask-image: linear-gradient(to right, transparent 0, #000 80px, #000 calc(100% - 80px), transparent 100%);
   mask-image: linear-gradient(to right, transparent 0, #000 80px, #000 calc(100% - 80px), transparent 100%);
+}
+.photo-strip-wrap:active {
+  cursor: grabbing;
 }
 .photo-strip-track {
   display: flex;
@@ -473,6 +478,7 @@
   gap: 32px;
   width: max-content;
   will-change: transform;
+  user-select: none;
 }
 .photo-strip-wrap:hover .photo-strip-track {
   animation-play-state: paused;
@@ -485,6 +491,9 @@
   height: 100%;
   width: auto;
   display: block;
+  -webkit-user-drag: none;
+  user-select: none;
+  pointer-events: none;
 }
 
 /* ============================================================
@@ -1144,7 +1153,43 @@ window.addEventListener('load',applyHeroScale,{once:true});
       );
 
       wrap.addEventListener('mouseenter', () => anim.pause());
-      wrap.addEventListener('mouseleave', () => anim.play());
+      wrap.addEventListener('mouseleave', () => { if (!isDragging) anim.play(); });
+
+      // 5단계: 드래그로 직접 옆으로 넘겨볼 수 있게 — 애니메이션의 currentTime을
+      // 드래그 거리만큼 직접 스크러빙 (translateX와 currentTime은 선형 관계이므로
+      // 정확하게 매핑 가능, 반복 구간은 모듈로 연산으로 자연스럽게 순환)
+      let isDragging = false;
+      let dragStartX = 0;
+      let dragStartTime = 0;
+
+      function wrapTime(t) {
+        return ((t % durationMs) + durationMs) % durationMs;
+      }
+
+      wrap.addEventListener('pointerdown', (e) => {
+        isDragging = true;
+        anim.pause();
+        dragStartX = e.clientX;
+        dragStartTime = anim.currentTime || 0;
+        wrap.setPointerCapture(e.pointerId);
+      });
+
+      wrap.addEventListener('pointermove', (e) => {
+        if (!isDragging) return;
+        const deltaX = e.clientX - dragStartX;
+        const newTime = wrapTime(dragStartTime - (deltaX / distance) * durationMs);
+        anim.currentTime = newTime;
+      });
+
+      function endDrag(e) {
+        if (!isDragging) return;
+        isDragging = false;
+        try { wrap.releasePointerCapture(e.pointerId); } catch (err) {}
+        // 마우스가 여전히 사진 위에 있으면 계속 정지 상태 유지, 벗어났을 때만 자동 재생 재개
+        if (!wrap.matches(':hover')) anim.play();
+      }
+      wrap.addEventListener('pointerup', endDrag);
+      wrap.addEventListener('pointercancel', endDrag);
     }));
   });
 })();
