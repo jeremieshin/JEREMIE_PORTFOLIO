@@ -562,14 +562,16 @@
   display: flex;
   gap: 10px;
   color: var(--ink-on-dark-dim);
+  opacity: 0.9;
   font-size: 18px;
   font-weight: 300;
   line-height: 1.3;
-  transition: color 0.25s ease, font-weight 0.25s ease;
+  transition: color 0.25s ease, font-weight 0.25s ease, opacity 0.25s ease;
   cursor: default;
 }
 .about-history-item:hover {
   color: var(--ink-on-dark);
+  opacity: 1;
   font-weight: 600;
 }
 .about-history-item::before {
