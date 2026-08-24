@@ -573,13 +573,23 @@
   font-weight: 600;
 }
 .about-history-item::before {
-  content: "-";
+  content: "•";
   color: var(--ink-on-dark-dim);
   flex-shrink: 0;
   transition: color 0.25s ease;
 }
 .about-history-item:hover::before {
   color: var(--ink-on-dark);
+}
+.about-history-subhead {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink-on-dark);
+  letter-spacing: 0.02em;
+  margin: 22px 0 10px;
+}
+.about-history-subhead:first-child {
+  margin-top: 0;
 }
 </style>
 </head>
@@ -1128,39 +1138,79 @@ window.addEventListener('load',applyHeroScale,{once:true});
   const WORK_EXPERIENCE = [
     {
       company: "11ST", years: "2014 - 2026",
-      items: [
-        "그랜드 십일절, 월간 십일절 등 11번가 주요 브랜드 프로모션 디자인",
-        "전사·명절·빅시즌·패션·뷰티 등 카테고리별 마케팅 프로모션 디자인",
-        "LG, 삼성, Apple, Google 등 주요 브랜드 제휴 및 세일즈 프로모션 디자인",
-        "대형 제휴·빅시즌·패션·뷰티 프로모션 및 제휴사 전문관의 디자인 템플릿 및 가이드 구축",
-        "주요 프로모션 영역의 배너 및 콘텐츠 디자인 가이드 수립",
-        "주요 상품, 아이콘, 버튼, 팝업 등 프로모션 Visual Style Guide 제작 및 운영",
-        "Midjourney, ChatGPT, Adobe Firefly 등 생성형 AI를 활용한 디자인 워크플로우 구축 및 실무 적용",
-        "AI를 활용한 프로모션 디자인 자동화 및 신규 디자인 전략 수립",
-        "11번가 AI Visual Asset 제작 및 Prompt Guideline 구축",
-        "일관된 디자인 생성을 위한 AI 기반 비주얼 생성 시스템 연구 및 고도화"
+      sections: [
+        {
+          heading: "브랜드 프로모션 및 캠페인 디자인",
+          items: [
+            "그랜드 십일절, 월간 십일절 등 11번가 주요 브랜드 프로모션 디자인",
+            "전사·명절·빅시즌·패션·뷰티 등 카테고리별 마케팅 프로모션 디자인",
+            "LG, 삼성, Apple, Google 등 주요 브랜드 제휴 및 세일즈 프로모션 디자인"
+          ]
+        },
+        {
+          heading: "프로모션 디자인 시스템 및 운영 가이드",
+          items: [
+            "대형 제휴·빅시즌·패션·뷰티 프로모션 및 제휴사 전문관의 디자인 템플릿 및 가이드 구축",
+            "주요 프로모션 영역의 배너 및 콘텐츠 디자인 가이드 수립",
+            "주요 상품, 아이콘, 버튼, 팝업 등 프로모션 Visual Style Guide 제작 및 운영"
+          ]
+        },
+        {
+          heading: "AI 디자인 활용 및 디자인 전략",
+          items: [
+            "Midjourney, ChatGPT, Adobe Firefly 등 생성형 AI를 활용한 디자인 워크플로우 구축 및 실무 적용",
+            "AI를 활용한 프로모션 디자인 자동화 및 신규 디자인 전략 수립",
+            "11번가 AI Visual Asset 제작 및 Prompt Guideline 구축",
+            "일관된 디자인 생성을 위한 AI 기반 비주얼 생성 시스템 연구 및 고도화"
+          ]
+        }
       ]
     },
     {
       company: "PIXDINE", years: "2012 - 2014",
-      items: [
-        "법무법인 태평양, PARADISE HOTEL BUSAN, 동부화재 DOMA Campaign 등 웹사이트 및 캠페인 구축",
-        "한화, 한라 비발디, 신한증권, Louis Quatorze, HERA, MARVEL KOREA, Disney 등 웹사이트 구축·리뉴얼을 위한 디자인 제안 및 시안 제작",
-        "KT Olleh 메인 배너 및 이벤트 운영을 위한 디자인 가이드 제작",
-        "웹사이트 구축·리뉴얼 프로젝트의 디자인 전략 수립 및 제안 PT",
-        "구축 프로젝트 전반의 디자인 설계 및 프로젝트 리딩, 퀄리티 관리",
-        "브랜드별 디자인 가이드 제작 및 운영 관리",
-        "주니어 디자인 리뷰 및 디렉션을 통한 프로젝트 품질 관리"
+      sections: [
+        {
+          heading: "웹사이트 구축 및 리뉴얼 디자인",
+          items: [
+            "법무법인 태평양, PARADISE HOTEL BUSAN, 동부화재 DOMA Campaign 등 웹사이트 및 캠페인 구축",
+            "한화, 한라 비발디, 신한증권, Louis Quatorze, HERA, MARVEL KOREA, Disney 등 웹사이트 구축·리뉴얼을 위한 디자인 제안 및 시안 제작",
+            "KT Olleh 메인 배너 및 이벤트 운영을 위한 디자인 가이드 제작"
+          ]
+        },
+        {
+          heading: "디자인 제안 및 프로젝트 리딩",
+          items: [
+            "웹사이트 구축·리뉴얼 프로젝트의 디자인 전략 수립 및 제안 PT",
+            "구축 프로젝트 전반의 디자인 설계 및 프로젝트 리딩, 퀄리티 관리",
+            "브랜드별 디자인 가이드 제작 및 운영 관리",
+            "주니어 디자인 리뷰 및 디렉션을 통한 프로젝트 품질 관리"
+          ]
+        }
       ]
     },
     {
       company: "TOY INTERACTIVE", years: "2010 - 2012",
-      items: [
-        "LG Monitor TV, LG Network Monitor, Korando C, Compassion Korea, KT Olleh e-book, KT Lifezaky, LOTS, Prospecs R, 롯데관, T Station 등 기업 웹사이트 구축 및 리뉴얼 디자인 제안",
-        "구축 이후 안정적인 운영을 위한 웹사이트 디자인 가이드 제작 및 운영",
-        "사이트 내 주요 콘텐츠 및 서비스 영역의 운영 디자인 및 품질 관리",
-        "Hillstate 월간 Wallpaper 및 이벤트 디자인 운영",
-        "KT Olleh 배너, 이벤트, 서브페이지 등 웹사이트 운영 디자인"
+      sections: [
+        {
+          heading: "기업 웹사이트 제안 및 구축",
+          items: [
+            "LG Monitor TV, LG Network Monitor, Korando C, Compassion Korea, KT Olleh e-book, KT Lifezaky, LOTS, Prospecs R, 롯데관, T Station 등 기업 웹사이트 구축 및 리뉴얼 디자인 제안"
+          ]
+        },
+        {
+          heading: "웹사이트 운영 및 디자인 가이드",
+          items: [
+            "구축 이후 안정적인 운영을 위한 웹사이트 디자인 가이드 제작 및 운영",
+            "사이트 내 주요 콘텐츠 및 서비스 영역의 운영 디자인 및 품질 관리"
+          ]
+        },
+        {
+          heading: "월간 운영 및 이벤트 디자인",
+          items: [
+            "Hillstate 월간 Wallpaper 및 이벤트 디자인 운영",
+            "KT Olleh 배너, 이벤트, 서브페이지 등 웹사이트 운영 디자인"
+          ]
+        }
       ]
     }
   ];
@@ -1173,13 +1223,16 @@ window.addEventListener('load',applyHeroScale,{once:true});
     const root = document.getElementById('workExpList');
     if (!root) return;
     const html = WORK_EXPERIENCE.map(group => {
-      const itemsHtml = group.items.map(it => `<div class="about-history-item">${escapeHTML(it)}</div>`).join('');
+      const sectionsHtml = group.sections.map(sec => {
+        const itemsHtml = sec.items.map(it => `<div class="about-history-item">${escapeHTML(it)}</div>`).join('');
+        return `<div class="about-history-subhead">${escapeHTML(sec.heading)}</div>${itemsHtml}`;
+      }).join('');
       return `<div class="about-history-group">
         <div class="about-history-left">
           <div class="about-history-company">${escapeHTML(group.company)}</div>
           <div class="about-history-year">${escapeHTML(group.years)}</div>
         </div>
-        <div class="about-history-items">${itemsHtml}</div>
+        <div class="about-history-items">${sectionsHtml}</div>
       </div>`;
     }).join('');
     root.innerHTML = html;
