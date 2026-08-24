@@ -566,12 +566,15 @@
   font-size: 18px;
   font-weight: 300;
   line-height: 1.3;
-  transition: color 0.25s ease, opacity 0.25s ease;
+  transform: scale(1);
+  transform-origin: left center;
+  transition: color 0.25s ease, opacity 0.25s ease, transform 0.25s ease;
   cursor: default;
 }
 .about-history-item:hover {
   color: var(--ink-on-dark);
   opacity: 1;
+  transform: scale(1.03);
 }
 .about-history-item::before {
   content: "•";
@@ -596,11 +599,14 @@
   background-clip: text;
   color: var(--ink-on-dark);
   -webkit-text-fill-color: var(--ink-on-dark);
-  transition: -webkit-text-fill-color 0.25s ease, color 0.25s ease, opacity 0.25s ease;
+  transform: scale(1);
+  transform-origin: left center;
+  transition: -webkit-text-fill-color 0.25s ease, color 0.25s ease, opacity 0.25s ease, transform 0.25s ease;
 }
 .about-history-subhead:hover {
   color: transparent;
   -webkit-text-fill-color: transparent;
+  transform: scale(1.03);
 }
 .about-history-subhead:first-child {
   margin-top: 0;
