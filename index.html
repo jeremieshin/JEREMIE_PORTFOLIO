@@ -620,6 +620,42 @@
 .about-history-subhead:first-child {
   margin-top: 0;
 }
+
+/* ============================================================
+   모바일 전용 오버라이드 — Work Experience 타임라인
+   PC(768px 초과) 스타일은 위 규칙 그대로 유지되며 전혀 영향받지 않음.
+   이 블록은 768px 이하에서만 적용됨.
+   ============================================================ */
+@media (max-width: 768px) {
+  .work-exp-title {
+    margin-bottom: 48px;
+  }
+  .about-history-group {
+    flex-direction: column;
+    gap: 0;
+    padding: 40px 0;
+  }
+  .about-history-left {
+    flex: none;
+    margin-bottom: 16px;
+  }
+  .about-history-company {
+    font-size: 26px;
+  }
+  .about-history-year {
+    font-size: 14px;
+  }
+  .about-history-items {
+    gap: 8px;
+  }
+  .about-history-item {
+    font-size: 15px;
+  }
+  .about-history-subhead {
+    font-size: 17px;
+    margin: 32px 0 10px;
+  }
+}
 </style>
 </head>
 <body>
