@@ -348,27 +348,36 @@
      ============================================================ */
   @media(max-width:768px){
     .work-layout{ gap:0; }
-    .work{ padding:24px 8px 80px; }
+    .work{ padding:24px 40px 80px; }
     .work-top{ margin-bottom:20px; }
     .filters{
       position:sticky; top:0; z-index:20;
-      flex-direction:row; flex-wrap:wrap; gap:12px 16px;
+      flex-direction:row; flex-wrap:nowrap; gap:16px;
       height:auto; padding:14px 0; margin-bottom:14px;
       background:var(--light);
+      overflow-x:auto; -webkit-overflow-scrolling:touch;
+      scrollbar-width:none;
     }
+    .filters::-webkit-scrollbar{ display:none; }
     .filter-btn{
       font-family:'Pretendard Variable', -apple-system, sans-serif!important;
-      font-size:20px!important; line-height:1!important;
+      font-size:28px!important; line-height:1!important;
       letter-spacing:0!important; font-weight:700!important;
+      white-space:nowrap!important; flex:0 0 auto!important;
     }
     .grid{
-      grid-template-columns:repeat(2, 1fr); gap:4px;
+      grid-template-columns:repeat(2, 1fr); gap:8px;
     }
     .tile{ aspect-ratio:3/4; border-radius:4px; padding:6px; }
     .tile .tag{ font-size:11px; }
 
-    /* 히어로 상단 비주얼 — object-fit:cover가 원형 그래픽 좌우를 잘라내던 문제 수정 */
-    .hero-title-img{ object-fit:contain!important; }
+    /* 히어로 상단 — 배경 #000 고정, 비주얼 이미지 2.1배 확대 후 중앙 정렬 */
+    .hero{ background:#000000!important; }
+    .hero-title-img{
+      object-fit:contain!important;
+      transform:scale(2.1)!important;
+      transform-origin:center center!important;
+    }
     .hero-title{
       font-family:'Pretendard Variable', -apple-system, sans-serif!important;
     }
@@ -377,6 +386,9 @@
     .work-exp-title, .about-history-company{
       font-family:'Pretendard Variable', -apple-system, sans-serif!important;
     }
+
+    /* 사진 슬라이더 → Work Experience 간격 절반으로 축소 */
+    #photo-strip{ margin-bottom:160px!important; }
   }
 
   /* ============ CONTACT / FOOTER ============ */
@@ -462,8 +474,9 @@
   @media(max-width:768px){
     .filter-btn{
       font-family:'Pretendard Variable', -apple-system, sans-serif!important;
-      font-size:20px!important; line-height:1!important;
+      font-size:28px!important; line-height:1!important;
       letter-spacing:0!important; font-weight:700!important;
+      white-space:nowrap!important; flex:0 0 auto!important;
     }
   }
 </style>
@@ -507,7 +520,7 @@
 #photo-strip {
   background: var(--dark);
   padding: 0;
-  margin-bottom: 320px; /* Work Experience와의 간격 (기존 160px + 160px) */
+  margin-bottom: 320px; /* 기존 160px + 160px, 모바일은 아래 미디어쿼리에서 절반으로 축소 */
 }
 .photo-strip-wrap {
   position: relative;
