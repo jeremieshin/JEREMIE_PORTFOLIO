@@ -347,8 +347,8 @@
      참고: plus-ex.com 모바일 카드 그리드 스타일
      ============================================================ */
   @media(max-width:768px){
-    .work-layout{ gap:0; }
-    .work{ padding:24px 12px 80px; }
+    .work-layout{ gap:0; align-items:stretch; width:100%; max-width:100%; }
+    .work{ padding:24px 12px 80px; overflow-x:hidden; }
     .work-top{ margin-bottom:20px; }
     .filters{
       position:sticky; top:0; z-index:20;
@@ -357,6 +357,7 @@
       background:var(--light);
       overflow-x:auto; -webkit-overflow-scrolling:touch;
       scrollbar-width:none;
+      width:100%; max-width:100%; box-sizing:border-box;
     }
     .filters::-webkit-scrollbar{ display:none; }
     .filter-btn{
@@ -367,6 +368,7 @@
     }
     .grid{
       grid-template-columns:repeat(2, 1fr); gap:6px;
+      width:100%; max-width:100%; box-sizing:border-box;
     }
     .tile{ aspect-ratio:3/4; border-radius:4px; padding:6px; }
     .tile .tag{ font-size:11px; }
