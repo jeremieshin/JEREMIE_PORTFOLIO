@@ -348,7 +348,7 @@
      ============================================================ */
   @media(max-width:768px){
     .work-layout{ gap:0; }
-    .work{ padding:24px 16px 80px; }
+    .work{ padding:24px 8px 80px; }
     .work-top{ margin-bottom:20px; }
     .filters{
       position:sticky; top:0; z-index:20;
@@ -362,10 +362,21 @@
       letter-spacing:0!important; font-weight:700!important;
     }
     .grid{
-      grid-template-columns:repeat(2, 1fr); gap:6px;
+      grid-template-columns:repeat(2, 1fr); gap:4px;
     }
-    .tile{ aspect-ratio:3/4; border-radius:4px; padding:10px; }
+    .tile{ aspect-ratio:3/4; border-radius:4px; padding:6px; }
     .tile .tag{ font-size:11px; }
+
+    /* 히어로 상단 비주얼 — object-fit:cover가 원형 그래픽 좌우를 잘라내던 문제 수정 */
+    .hero-title-img{ object-fit:contain!important; }
+    .hero-title{
+      font-family:'Pretendard Variable', -apple-system, sans-serif!important;
+    }
+
+    /* Work Experience / Contact 제목 — 고딕 폰트 강제 */
+    .work-exp-title, .about-history-company{
+      font-family:'Pretendard Variable', -apple-system, sans-serif!important;
+    }
   }
 
   /* ============ CONTACT / FOOTER ============ */
@@ -1502,7 +1513,8 @@ window.addEventListener('load',applyHeroScale,{once:true});
     const descent = m.actualBoundingBoxDescent || fontSize * 0.02;
     const textHeight = ascent + descent;
 
-    H = Math.ceil(TOP_PAD_PX + textHeight * 1.25 + BOTTOM_GAP_PX);
+    const bottomGap = window.innerWidth <= 768 ? 40 : BOTTOM_GAP_PX;
+    H = Math.ceil(TOP_PAD_PX + textHeight * 1.25 + bottomGap);
     hero.style.height = H + 'px';
 
     DPR = Math.min(window.devicePixelRatio || 1, 2);
