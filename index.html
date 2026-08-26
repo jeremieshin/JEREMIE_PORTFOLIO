@@ -337,9 +337,32 @@
   .tile.hidden{ display:none; }
 
   @media(max-width:900px){
-    .work-layout{ flex-direction:column; gap:28px; }
+    .work-layout{ flex-direction:column; gap:0; }
     .filters{ flex-direction:row; gap:20px; position:static; height:auto; }
     .filter-btn{ font-size:32px; }
+  }
+
+  /* ============================================================
+     모바일(768px 이하) — Work 그리드: 카드 2열 + 카테고리 메뉴 스티키 바
+     참고: plus-ex.com 모바일 카드 그리드 스타일
+     ============================================================ */
+  @media(max-width:768px){
+    .work-layout{ gap:0; }
+    .filters{
+      position:sticky; top:0; z-index:20;
+      flex-direction:row; flex-wrap:wrap; gap:14px 18px;
+      height:auto; padding:14px 0; margin-bottom:16px;
+      background:var(--light);
+    }
+    .filter-btn{
+      font-size:15px; line-height:1; letter-spacing:0;
+      font-weight:700;
+    }
+    .grid{
+      grid-template-columns:repeat(2, 1fr); gap:8px;
+    }
+    .tile{ aspect-ratio:3/4; border-radius:4px; padding:10px; }
+    .tile .tag{ font-size:11px; }
   }
 
   /* ============ CONTACT / FOOTER ============ */
