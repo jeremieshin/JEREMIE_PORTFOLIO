@@ -382,18 +382,16 @@
     .tile .tag{ display:none; }
 
     /* 히어로 상단 — 배경 #000 고정, 비주얼 이미지 2.1배 확대.
-       object-position:center center로 완전 중앙정렬 유지 → 창 크기가 어떻게 바뀌어도
-       이미지가 위로 쏠리지 않고 항상 세로 중앙에 위치함. 상단 높이는 100vh 대신
-       82vh로 단순 고정 축소(복잡한 JS 계산 제거 - 폭이 좁아질 때 이미지가
-       위로 쏠리는 부작용이 있어서 걷어냄). */
+       object-position:center 30% → 중앙(50%)보다 20%p 위로 올림.
+       높이는 82vh에서 30% 추가 축소 → 약 57vh. */
     .hero{
-      height: 82vh!important;
-      min-height: 480px!important;
+      height: 57vh!important;
+      min-height: 400px!important;
       background:#000000!important;
     }
     .hero-title-img{
       object-fit:contain!important;
-      object-position:center center!important;
+      object-position:center 30%!important;
       transform:scale(2.1)!important;
       transform-origin:center center!important;
     }
