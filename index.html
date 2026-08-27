@@ -373,10 +373,11 @@
     .tile{ aspect-ratio:3/4; border-radius:4px; padding:6px; }
     .tile .tag{ font-size:11px; }
 
-    /* 히어로 상단 — 배경 #000 고정, 비주얼 이미지 2.1배 확대 후 중앙 정렬 */
+    /* 히어로 상단 — 배경 #000 고정, 비주얼 이미지 2.1배 확대, 상단 여백 40% 축소 */
     .hero{ background:#000000!important; }
     .hero-title-img{
       object-fit:contain!important;
+      object-position:center 30%!important;
       transform:scale(2.1)!important;
       transform-origin:center center!important;
     }
@@ -388,6 +389,9 @@
     .work-exp-title, .about-history-company{
       font-family:'Pretendard Variable', -apple-system, sans-serif!important;
     }
+
+    /* Work Experience → Contact 사이 간격 40% 축소 (320px -> 192px) */
+    #about-history{ padding: 0 6vw 192px!important; }
 
     /* 사진 슬라이더 → Work Experience 간격 절반으로 축소 */
     #photo-strip{ margin-bottom:160px!important; }
