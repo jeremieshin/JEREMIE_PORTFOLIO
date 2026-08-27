@@ -290,6 +290,7 @@
   }
   .filter-btn.active{ color:var(--red); }
   .filter-btn:hover{ color:var(--red); }
+  .filters-scroll{ display:contents; } /* 데스크톱: 레이아웃에 영향 없음, 자식이 .filters의 직접 자식처럼 동작 */
 
   .grid{
     display:grid; grid-template-columns:repeat(auto-fit, minmax(262px, 1fr)); gap:14px;
@@ -350,16 +351,23 @@
     .work-layout{ gap:0; align-items:stretch; width:100%; max-width:100%; }
     .work{ padding:24px 12px 80px; overflow-x:hidden; }
     .work-top{ margin-bottom:20px; }
+    /* .filters는 sticky 포지셔닝만 담당 (overflow-x는 여기 두지 않음 —
+       position:sticky와 overflow-x:auto를 같은 요소에 같이 걸면
+       iOS Safari에서 가로 스크롤 초기 위치가 어긋나서 첫 항목(All)이
+       화면 밖으로 밀려 안 보이는 버그가 있었음 → 스크롤은 내부 .filters-scroll로 분리) */
     .filters{
       position:sticky; top:0; z-index:20;
-      flex-direction:row; flex-wrap:nowrap; gap:16px;
-      height:auto; padding:14px 0; margin-bottom:14px;
+      flex-direction:row; height:auto; padding:14px 0; margin-bottom:14px;
       background:var(--light);
+      overflow:visible; width:100%; max-width:100%; box-sizing:border-box;
+    }
+    .filters-scroll{
+      display:flex; flex-direction:row; flex-wrap:nowrap; gap:16px;
       overflow-x:auto; -webkit-overflow-scrolling:touch;
       scrollbar-width:none;
       width:100%; max-width:100%; box-sizing:border-box;
     }
-    .filters::-webkit-scrollbar{ display:none; }
+    .filters-scroll::-webkit-scrollbar{ display:none; }
     .filter-btn{
       font-family:'Pretendard Variable', -apple-system, sans-serif!important;
       font-size:28px!important; line-height:1!important;
@@ -377,7 +385,7 @@
        여백 로직: 이미지 자신의 박스는 원본(100vh 기준) 크기 그대로 유지한 채
        위로 --hero-mobile-shrink 만큼 밀어올리고, .hero 컨테이너만 그만큼 짧게(overflow:hidden으로 clip)
        만들어서 "위쪽 여백만" 줄고 "이미지~하단 텍스트 거리"는 완전히 고정되도록 함. */
-    :root{ --hero-mobile-shrink: 90px; }
+    :root{ --hero-mobile-shrink: 0px; } /* 안전 기본값 — 실제 값은 JS가 이미지 내 원형 위치를 실측해서 계산 */
     .hero{
       height: calc(100vh - var(--hero-mobile-shrink))!important;
       min-height: calc(640px - var(--hero-mobile-shrink))!important;
@@ -831,11 +839,13 @@
   <div class="work-top"></div>
   <div class="work-layout">
     <div class="filters">
-      <button class="filter-btn active" data-filter="all">All</button>
-      <button class="filter-btn" data-filter="project">Project</button>
-      <button class="filter-btn" data-filter="promotion">Promotion</button>
-      <button class="filter-btn" data-filter="guide">Guide</button>
-      <button class="filter-btn" data-filter="ai">Ai</button>
+      <div class="filters-scroll">
+        <button class="filter-btn active" data-filter="all">All</button>
+        <button class="filter-btn" data-filter="project">Project</button>
+        <button class="filter-btn" data-filter="promotion">Promotion</button>
+        <button class="filter-btn" data-filter="guide">Guide</button>
+        <button class="filter-btn" data-filter="ai">Ai</button>
+      </div>
     </div>
     <div class="grid" id="grid">
       <!-- 카드는 script.js가 projects.js 데이터를 읽어서 자동으로 채워줍니다 -->
@@ -1219,6 +1229,43 @@ const applyHeroScale=()=>{
 const schedule=()=>requestAnimationFrame(()=>requestAnimationFrame(applyHeroScale));
 document.readyState==='loading'?document.addEventListener('DOMContentLoaded',schedule):schedule();
 window.addEventListener('load',applyHeroScale,{once:true});
+})();</script>
+<script id="jeremie-hero-mobile-shrink">(()=>{
+  // 모바일 히어로 상단 여백 계산
+  // .hero-title-img(260821_main.png, 3200x1800)는 object-fit:contain + object-position:center 30% + scale(2.1)로
+  // 렌더링됨. 이 이미지 안에서 실제 원형(PORTFOLIO) 그래픽은 세로로 324px~1448px(전체 1800px 중) 구간에 있음.
+  // 이 구간을 그대로 계산에 반영해서, "원 위쪽으로 실제로 비어있는 여백"만큼만 안전하게 줄임 —
+  // 무작정 큰 값을 줄이면 원 자체가 위쪽에서 잘려버림 (실측 없이 90px로 줄였다가 발생했던 문제).
+  const IMG_W = 3200, IMG_H = 1800;
+  const CIRCLE_TOP_FRAC = 324 / IMG_H;
+  const CIRCLE_BOTTOM_FRAC = 1448 / IMG_H;
+  const OBJ_POS_Y = 0.30; // object-position:center 30%
+  const SCALE = 2.1;
+  const SAFETY = 0.55; // 계산된 여백의 55%만 줄여서 원이 잘리지 않도록 여유를 둠
+
+  const applyShrink=()=>{
+    if(window.innerWidth>768){
+      document.documentElement.style.setProperty('--hero-mobile-shrink','0px');
+      return;
+    }
+    const W = window.innerWidth;
+    const H = window.innerHeight; // 100vh 근사치(축소 적용 전 기준)
+    const aspect = IMG_W / IMG_H;
+    const Ch = W / aspect; // object-fit:contain, 폭 기준으로 맞춰진 렌더 높이
+    const slack = H - Ch;
+    const contentTop = OBJ_POS_Y * slack; // object-position 30% 적용 후 콘텐츠 상단 y
+    const boxCenter = H / 2;
+    const circleTopInContent = contentTop + CIRCLE_TOP_FRAC * Ch;
+    const scaledCircleTop = boxCenter + (circleTopInContent - boxCenter) * SCALE; // scale(2.1) 적용 후 원 상단의 실제 화면 y
+    const gap1 = Math.max(0, scaledCircleTop); // 원 위쪽의 실제 빈 공간(px)
+    const shrink = Math.max(0, Math.round(gap1 * SAFETY));
+    document.documentElement.style.setProperty('--hero-mobile-shrink', shrink + 'px');
+  };
+
+  const schedule=()=>requestAnimationFrame(()=>requestAnimationFrame(applyShrink));
+  document.readyState==='loading'?document.addEventListener('DOMContentLoaded',schedule):schedule();
+  window.addEventListener('load',applyShrink,{once:true});
+  window.addEventListener('resize',applyShrink);
 })();</script>
 <script>
 // ============================================================
