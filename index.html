@@ -381,19 +381,20 @@
     .tile{ aspect-ratio:3/5; border-radius:0; padding:6px; }
     .tile .tag{ display:none; }
 
-    /* 히어로 상단 — 배경 #000 고정, 비주얼 이미지 2.1배 확대.
-       object-position:center 30% → 중앙(50%)보다 20%p 위로 올림.
-       높이는 82vh에서 30% 추가 축소 → 약 57vh. */
+    /* 히어로 상단 — 배경 #000 고정.
+       기존 object-fit:contain + transform:scale(2.1) 조합은 박스 높이가 바뀔 때마다
+       중심 기준 확대 배율(2.1배)만큼 위치 오차가 증폭되어 원이 위로 튀어오르는
+       근본적으로 불안정한 구조였음 → object-fit:cover로 교체(transform 제거).
+       cover는 박스를 항상 빈틈없이 채우므로 높이가 얼마든 위아래 여백 자체가 생기지 않음. */
     .hero{
       height: 57vh!important;
       min-height: 400px!important;
       background:#000000!important;
     }
     .hero-title-img{
-      object-fit:contain!important;
-      object-position:center 30%!important;
-      transform:scale(2.1)!important;
-      transform-origin:center center!important;
+      object-fit:cover!important;
+      object-position:center center!important;
+      transform:none!important;
     }
     .hero-title{
       font-family:'Pretendard Variable', -apple-system, sans-serif!important;
