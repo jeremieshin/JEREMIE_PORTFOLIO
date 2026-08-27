@@ -382,20 +382,17 @@
     .tile .tag{ display:none; }
 
     /* 히어로 상단 — 배경 #000 고정, 비주얼 이미지 2.1배 확대.
-       여백 로직: 이미지 자신의 박스는 원본(100vh 기준) 크기 그대로 유지한 채
-       위로 --hero-mobile-shrink 만큼 밀어올리고, .hero 컨테이너만 그만큼 짧게(overflow:hidden으로 clip)
-       만들어서 "위쪽 여백만" 줄고 "이미지~하단 텍스트 거리"는 완전히 고정되도록 함. */
-    :root{ --hero-mobile-shrink: 0px; } /* 안전 기본값 — 실제 값은 JS가 이미지 내 원형 위치를 실측해서 계산 */
+       .hero 컨테이너 높이를 JS가 계산한 값(--hero-mobile-shrink)만큼 줄임.
+       이미지는 원본 렌더링 방식(inset:0, object-fit:contain) 그대로 두면
+       가로폭 기준으로 크기가 결정되므로 원 자체 크기는 그대로 유지되면서
+       위쪽 여백만 자연스럽게 줄어듦(계산식은 하단 JS 참고). */
+    :root{ --hero-mobile-shrink: 0px; }
     .hero{
       height: calc(100vh - var(--hero-mobile-shrink))!important;
-      min-height: calc(640px - var(--hero-mobile-shrink))!important;
+      min-height: 480px!important;
       background:#000000!important;
     }
     .hero-title-img{
-      top: calc(-1 * var(--hero-mobile-shrink))!important;
-      left:0!important; right:0!important; bottom:auto!important;
-      width:100%!important;
-      height: calc(100% + var(--hero-mobile-shrink))!important;
       object-fit:contain!important;
       object-position:center 30%!important;
       transform:scale(2.1)!important;
@@ -1231,17 +1228,17 @@ document.readyState==='loading'?document.addEventListener('DOMContentLoaded',sch
 window.addEventListener('load',applyHeroScale,{once:true});
 })();</script>
 <script id="jeremie-hero-mobile-shrink">(()=>{
-  // 모바일 히어로 상단 여백 계산
-  // .hero-title-img(260821_main.png, 3200x1800)는 object-fit:contain + object-position:center 30% + scale(2.1)로
-  // 렌더링됨. 이 이미지 안에서 실제 원형(PORTFOLIO) 그래픽은 세로로 324px~1448px(전체 1800px 중) 구간에 있음.
-  // 이 구간을 그대로 계산에 반영해서, "원 위쪽으로 실제로 비어있는 여백"만큼만 안전하게 줄임 —
-  // 무작정 큰 값을 줄이면 원 자체가 위쪽에서 잘려버림 (실측 없이 90px로 줄였다가 발생했던 문제).
+  // 모바일 히어로 높이 계산
+  // .hero-title-img(260821_main.png, 3200x1800)는 object-fit:contain + object-position:center 30% + scale(2.1)로 렌더링됨.
+  // 이미지 안에서 실제 원형(PORTFOLIO) 그래픽은 세로로 324px~1448px(전체 1800px 중) 구간에 있음.
+  // 핵심: 원 자체의 화면상 크기는 .hero 높이와 무관(가로폭 기준으로 렌더링되기 때문)하므로,
+  // "원 위쪽 여백이 정확히 SAFETY_GAP px가 되는 .hero 높이"를 역산해서 그 값으로 컨테이너를 줄인다.
+  // 이렇게 하면 원 크기는 그대로 유지된 채 위쪽 여백만 최소화되고, 그 결과로 원~텍스트 간격도 자연스럽게 컴팩트해짐.
   const IMG_W = 3200, IMG_H = 1800;
   const CIRCLE_TOP_FRAC = 324 / IMG_H;
-  const CIRCLE_BOTTOM_FRAC = 1448 / IMG_H;
-  const OBJ_POS_Y = 0.30; // object-position:center 30%
+  const OBJ_POS_Y = 0.30;
   const SCALE = 2.1;
-  const SAFETY = 0.55; // 계산된 여백의 55%만 줄여서 원이 잘리지 않도록 여유를 둠
+  const SAFETY_GAP = 4; // 원 위쪽에 남길 최소 여백(px) — 0으로 두면 반올림 오차로 살짝 잘릴 수 있어 아주 약간의 여유만 둠
 
   const applyShrink=()=>{
     if(window.innerWidth>768){
@@ -1249,16 +1246,29 @@ window.addEventListener('load',applyHeroScale,{once:true});
       return;
     }
     const W = window.innerWidth;
-    const H = window.innerHeight; // 100vh 근사치(축소 적용 전 기준)
+    const H_current = window.innerHeight; // 100vh 근사치
     const aspect = IMG_W / IMG_H;
-    const Ch = W / aspect; // object-fit:contain, 폭 기준으로 맞춰진 렌더 높이
-    const slack = H - Ch;
-    const contentTop = OBJ_POS_Y * slack; // object-position 30% 적용 후 콘텐츠 상단 y
-    const boxCenter = H / 2;
-    const circleTopInContent = contentTop + CIRCLE_TOP_FRAC * Ch;
-    const scaledCircleTop = boxCenter + (circleTopInContent - boxCenter) * SCALE; // scale(2.1) 적용 후 원 상단의 실제 화면 y
-    const gap1 = Math.max(0, scaledCircleTop); // 원 위쪽의 실제 빈 공간(px)
-    const shrink = Math.max(0, Math.round(gap1 * SAFETY));
+    const Ch = W / aspect; // object-fit:contain, 폭 기준 렌더 높이(원본 100vh 여부와 무관하게 항상 동일)
+
+    // 이분탐색(bisection)으로 gap1(H)=SAFETY_GAP이 되는 H를 직접 찾는다.
+    const gap1For = (H)=>{
+      const slack = H - Ch;
+      const contentTop = OBJ_POS_Y * slack;
+      const boxCenter = H / 2;
+      const circleTopInContent = contentTop + CIRCLE_TOP_FRAC * Ch;
+      return boxCenter + (circleTopInContent - boxCenter) * SCALE;
+    };
+
+    // 이분탐색: H를 Ch(최소) ~ H_current(최대) 범위에서 줄여가며 gap1이 SAFETY_GAP에 가장 가까운 값을 찾음
+    let lo = Ch, hi = H_current, targetH = H_current;
+    for(let i=0;i<40;i++){
+      const mid = (lo+hi)/2;
+      const g = gap1For(mid);
+      if(g > SAFETY_GAP){ hi = mid; } else { lo = mid; }
+      targetH = mid;
+    }
+
+    const shrink = Math.max(0, Math.round(H_current - targetH));
     document.documentElement.style.setProperty('--hero-mobile-shrink', shrink + 'px');
   };
 
