@@ -373,9 +373,21 @@
     .tile{ aspect-ratio:3/4; border-radius:4px; padding:6px; }
     .tile .tag{ font-size:11px; }
 
-    /* 히어로 상단 — 배경 #000 고정, 비주얼 이미지 2.1배 확대, 상단 여백 40% 축소 */
-    .hero{ background:#000000!important; }
+    /* 히어로 상단 — 배경 #000 고정, 비주얼 이미지 2.1배 확대.
+       여백 로직: 이미지 자신의 박스는 원본(100vh 기준) 크기 그대로 유지한 채
+       위로 --hero-mobile-shrink 만큼 밀어올리고, .hero 컨테이너만 그만큼 짧게(overflow:hidden으로 clip)
+       만들어서 "위쪽 여백만" 줄고 "이미지~하단 텍스트 거리"는 완전히 고정되도록 함. */
+    :root{ --hero-mobile-shrink: 90px; }
+    .hero{
+      height: calc(100vh - var(--hero-mobile-shrink))!important;
+      min-height: calc(640px - var(--hero-mobile-shrink))!important;
+      background:#000000!important;
+    }
     .hero-title-img{
+      top: calc(-1 * var(--hero-mobile-shrink))!important;
+      left:0!important; right:0!important; bottom:auto!important;
+      width:100%!important;
+      height: calc(100% + var(--hero-mobile-shrink))!important;
       object-fit:contain!important;
       object-position:center 30%!important;
       transform:scale(2.1)!important;
@@ -390,8 +402,14 @@
       font-family:'Pretendard Variable', -apple-system, sans-serif!important;
     }
 
-    /* Work Experience → Contact 사이 간격 40% 축소 (320px -> 192px) */
-    #about-history{ padding: 0 6vw 192px!important; }
+    /* Work Experience → Contact 사이 간격 40% 축소 (320px -> 192px)
+       + 좌측 정렬은 반드시 --about-text-left 변수 유지 (Contact와 동일한 기준점) */
+    #about-history{
+      padding-top:0!important;
+      padding-right:6vw!important;
+      padding-bottom:192px!important;
+      padding-left: var(--about-text-left, 6vw)!important;
+    }
 
     /* 사진 슬라이더 → Work Experience 간격 절반으로 축소 */
     #photo-strip{ margin-bottom:160px!important; }
