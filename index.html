@@ -382,20 +382,21 @@
     .tile .tag{ display:none; }
 
     /* 히어로 상단 — 배경 #000 고정.
-       기존 object-fit:contain + transform:scale(2.1) 조합은 박스 높이가 바뀔 때마다
-       중심 기준 확대 배율(2.1배)만큼 위치 오차가 증폭되어 원이 위로 튀어오르는
-       근본적으로 불안정한 구조였음 → object-fit:cover로 교체(transform 제거).
-       cover는 박스를 항상 빈틈없이 채우므로 높이가 얼마든 위아래 여백 자체가 생기지 않음. */
+       기존 <img>에 object-fit + transform:scale을 쓰면, 이미지 자신의 사각형 박스가
+       줄어들면서 그 경계선이 .hero 배경과 미묘한 색 차이로 테두리처럼 드러나는 문제가 있었음.
+       → <img>는 숨기고 .hero 자체의 background-image로 전환. background는 항상 요소
+       배경색과 완전히 이어지므로 확대/축소해도 경계선이 생기지 않음. */
     .hero{
       height: 57vh!important;
       min-height: 400px!important;
-      background:#000000!important;
+      background-color:#000000!important;
+      background-image:url('260821_main.png')!important;
+      background-repeat:no-repeat!important;
+      background-position:center center!important;
+      background-size:auto 81%!important;
     }
     .hero-title-img{
-      object-fit:cover!important;
-      object-position:center center!important;
-      transform:scale(0.81)!important;
-      transform-origin:center center!important;
+      opacity:0!important;
     }
     .hero-title{
       font-family:'Pretendard Variable', -apple-system, sans-serif!important;
